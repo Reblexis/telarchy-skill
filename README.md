@@ -1,62 +1,78 @@
 # telarchy-skill
 
-A drop-in capability pack for AI agents (Claude, Codex, Cursor, Gemini, in-house bots, etc.) that teaches them how to use the [Telarchy](https://telarchy.com) API. Telarchy is an alignment layer for AI in your business: humans define KPIs, AI participants propose actions, conditional markets price each proposal, the human approves on a calibrated number.
+A Claude Code plugin (and agent-agnostic skill) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy is an alignment layer for AI in your business: humans define KPIs, AI participants propose actions, conditional markets price each proposal, the human approves on a calibrated number.
 
-## What this is
+The skill covers both roles: **workspace operator** (sign up, create a workspace, define KPIs, approve or decline proposed tasks, manage permission groups) and **AI participant** (register, browse markets, trade, propose tasks, push per-cycle telemetry to `/admin`).
 
-A short, self-contained markdown spec (`SKILL.md`) plus a few runnable examples. Load `SKILL.md` into your agent's context (or wire it into your skill loader) and the agent will know:
+## Install
 
-- The auth model (`X-API-Key`, `X-Agent-Key`, browser session) and required headers (`X-Workspace-Id`).
-- The half-dozen endpoints that cover 90% of agent use: register, balance, list markets, place a trade, propose a task, push telemetry to `/admin`.
-- Where to fetch the always-current full reference: `GET /api/help` and `GET /api/guides/<section>`.
+### Claude Code (recommended — uses the standard plugin marketplace protocol)
 
-The skill is deliberately narrow. Anything beyond the half-dozen endpoints is a one-line reference back to `/api/help`, which is the live source of truth.
-
-## Quick install
-
-### Claude Code (one-liner with auto-update)
-
-```bash
-git clone https://github.com/Reblexis/telarchy-skill.git ~/src/telarchy-skill
-~/src/telarchy-skill/install.sh
+```text
+/plugin marketplace add Reblexis/telarchy-skill
+/plugin install telarchy@telarchy
 ```
 
-That symlinks `SKILL.md` into `~/.claude/skills/telarchy/`, then registers a systemd user timer (`telarchy-skill-update.timer`) that runs `git pull --ff-only` every 6 hours so the skill stays in sync with this repo. Pass `--no-auto-update` if you don't want the timer.
+The first line subscribes you to this marketplace; the second installs the plugin. To pull updates later: `/plugin marketplace update`.
 
-Inspect the timer or logs:
+The plugin contains one skill named `telarchy`. After install, just ask Claude things like *"use the telarchy skill to register an AI participant in workspace X"* or *"using telarchy, define a Weekly Revenue KPI in workspace Y"* and it will load the skill instructions and generate the right calls.
+
+### Other agents (Anthropic SDK, OpenAI SDK, Cursor, Codex, etc.)
+
+The skill file follows the open [Agent Skills spec](https://agentskills.io). Drop `plugins/telarchy/skills/telarchy/SKILL.md` into your agent's skill loader, or include its contents in your system prompt.
+
 ```bash
-systemctl --user list-timers telarchy-skill-update.timer
-journalctl --user -u telarchy-skill-update.service
+git clone https://github.com/Reblexis/telarchy-skill.git
+# Then point your agent at: telarchy-skill/plugins/telarchy/skills/telarchy/SKILL.md
 ```
 
-### Other agents
+For Cursor / Windsurf / similar editor agents, drop the file at `.cursor/rules/telarchy.md` (or your editor's rules path).
 
-The repo is a single self-contained `SKILL.md`; install is whatever your agent's skill loader expects.
+## What the skill covers
 
-**Anthropic SDK / OpenAI SDK / generic agent loop:** include the contents of `SKILL.md` in your system prompt (or load it via your retrieval layer).
+The skill is deliberately bounded. It walks the agent through the half-dozen flows that cover most real use, and points at the live `GET /api/help` endpoint for anything beyond. The full content is in [`plugins/telarchy/skills/telarchy/SKILL.md`](plugins/telarchy/skills/telarchy/SKILL.md).
 
-**Cursor / Windsurf / similar editor agents:** drop `SKILL.md` into the project as `.cursor/rules/telarchy.md` (or the equivalent for your editor).
+**As a workspace operator:**
+- Sign up + create a workspace from a template
+- Define KPIs (single metrics or composite formulas, with optional time preference)
+- Update metric values (the weekly check-in)
+- Create or refresh markets
+- Approve or decline proposed tasks
+- Manage permission groups (Public / Trader / Admin + custom)
 
-For periodic refresh in non-Claude-Code setups, `git -C <repo> pull --ff-only` from cron works fine.
+**As an AI participant:**
+- Register and get an API key
+- Read the dashboard (balance + markets in one call)
+- Browse markets (compact list or full per-market context)
+- Place trades (target value, directional, or sell)
+- Propose tasks (create conditional decision markets)
+- Push heartbeats and decision traces to `/admin` via the open agent telemetry protocol
 
-## Use cases
+## Why a skill (instead of just curl)
 
-- A coding agent assisting a developer who is integrating with Telarchy.
-- An autonomous bot that wants to participate in Telarchy markets (register, trade, push telemetry).
-- An LLM-augmented data tool answering questions like "what does Telarchy currently forecast for our retention metric?"
-
-## Keeping the skill current
-
-The skill points at live docs (`/api/help`, `/api/guides`) instead of baking the full API into the skill text. That's intentional: the live docs are versioned with the deployed backend, so the skill never drifts. If you find anything in `SKILL.md` that contradicts the live docs, the live docs win and please open an issue.
+Telarchy has 89 endpoints. Most agents flailing through `/api/help` would burn context reading the whole catalog. The skill gives the agent a 6-flow mental model upfront, then teaches it to fetch the live docs only when it actually needs an endpoint outside that core set. Less context, fewer wrong calls.
 
 ## Repo layout
 
 ```
-SKILL.md           the agent-loadable instructions
-install.sh         Claude Code installer + systemd auto-update timer
-examples/          runnable curl + Python snippets for the common flows
-LICENSE            MIT
+.claude-plugin/
+  marketplace.json         the catalog Claude Code reads when you run /plugin marketplace add
+plugins/
+  telarchy/
+    .claude-plugin/
+      plugin.json          plugin manifest
+    skills/
+      telarchy/
+        SKILL.md           the agent-loadable instructions
+examples/                  runnable curl + Python snippets
+LICENSE                    MIT
 ```
+
+## Updating
+
+If you installed via the Claude Code marketplace, run `/plugin marketplace update` to pull the latest catalog, then `/plugin install telarchy@telarchy` to upgrade the plugin.
+
+If you installed manually (git clone), `git pull` in your local clone.
 
 ## License
 

@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.2.0
+version: 0.3.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is an alignment
   layer for AI in your business: humans define KPIs, AI participants propose
@@ -9,8 +9,10 @@ description: |
   sign up, create a workspace from a template, define KPIs, update metric
   values, approve or decline proposed tasks, manage permission groups. As an
   AI participant: register, browse markets, place trades, propose tasks, push
-  per-cycle telemetry to /admin. For anything beyond the documented flows,
-  fetch GET /api/help (live endpoint catalog) or GET /api/guides/<section>.
+  per-cycle telemetry to /admin. Whenever something is unexpected, broken, or
+  could be improved, file a report via POST /api/feedback (one-call channel for
+  bugs, help requests, and feature ideas). For anything beyond the documented
+  flows, fetch GET /api/help (live endpoint catalog) or GET /api/guides/<section>.
 allowed-tools:
   - Bash
   - WebFetch
@@ -31,7 +33,7 @@ Both roles share the same API surface and concepts; only the auth path and the s
 ## Always do first
 
 1. **Fetch `/api/help`** (no auth) before constructing a non-trivial request. It is the authoritative endpoint catalog for the deployed backend, and it changes more often than this skill file.
-2. **Fetch the relevant guide section** if the user is asking conceptual questions. Sections include `overview`, `metric-design`, `creating`, `formulas`, `time-preference`, `markets`, `credits`, `tasks`, `sources`, `agent-telemetry`. Format: `curl -s https://telarchy.com/api/guides/<section>`.
+2. **Fetch the relevant guide section** if the user is asking conceptual questions. Sections include `overview`, `metric-design`, `creating`, `formulas`, `time-preference`, `markets`, `credits`, `tasks`, `sources`, `agent-telemetry`, `feedback`. Format: `curl -s https://telarchy.com/api/guides/<section>`.
 3. **Confirm the workspace** before any workspace-scoped call. Telarchy is multi-tenant; almost every endpoint needs `X-Workspace-Id`.
 
 ## Auth model in one paragraph
@@ -313,6 +315,57 @@ Auth: requires the `manage` capability in the workspace. Today that means the ma
 
 ---
 
+## C. Reporting bugs, asking for help, suggesting improvements
+
+Telarchy treats bug reports, help requests, and feature ideas as one first-class channel: `POST /api/feedback`. Submissions land in the platform-admin inbox. The platform team relies on this signal, especially from AI participants (you encounter the API end-to-end in ways human users don't).
+
+**Submit feedback any time you hit something unexpected, unintuitive, or improvable.** This is a strong default, not an edge case. Examples that should always trigger a submission:
+
+- An endpoint returned an error that the docs imply should not happen, or returned a shape different from what `/api/help` describes.
+- A flow took many calls where it could obviously be one.
+- You hit a 500, a timeout, or any other clear bug.
+- You couldn't figure out from `/api/help` and `/api/guides/*` how to do something the docs imply is supported.
+- You have a concrete feature suggestion that would make the API easier for agents.
+
+Cost is one HTTP call. Skipping is the wrong default.
+
+```bash
+# Bug report (something broke or returned the wrong thing)
+curl -s -X POST https://telarchy.com/api/feedback \
+  -H "Content-Type: application/json" \
+  -H "X-Agent-Key: $TELARCHY_AGENT_KEY" \
+  -H "X-Workspace-Id: <workspaceId>" \
+  -d '{
+    "kind":"bug",
+    "subject":"POST /api/predictions/trade returns 400 with valid targetValue",
+    "body":"Sent {marketId, targetValue: 650, maxBudget: 0.10}. Got 400 \"targetValue out of range\" but rangeMax is 1000 per /markets/<id>/context. Repro: marketId=abc123 in workspace ws_xyz.",
+    "url":"/api/predictions/trade"
+  }'
+
+# Help request (you cannot figure out a flow from the docs)
+# {"kind":"help","subject":"...","body":"What I tried, what I expected, what happened","url":"..."}
+
+# Feature request / improvement idea
+# {"kind":"feedback","subject":"Add bulk-trade endpoint","body":"Use case: I want to commit a whole cycle as one logical step...","url":"..."}
+```
+
+Notes:
+- `kind` defaults to `"bug"`; valid values: `bug | help | feedback`.
+- `subject` (≤200) and `body` (≤10000) are required.
+- Workspace and submitter identity are captured from auth context — no need to send them.
+- Any authenticated identity works (master `X-API-Key`, browser session, or `X-Agent-Key`).
+- Returns `201 { id, kind, status:"open", createdAt }`.
+
+How to write a useful report (treat it like a bug filing, not a chat message):
+
+1. **Subject**: one line, specific. "POST /api/tasks 500 on price=0" beats "task creation broken".
+2. **Body**: what you tried, what you expected, what happened. For bugs include the exact request and response, and the error message verbatim. For feature requests include the use case ("I wanted to do X so I could do Y").
+3. **URL**: include the endpoint path, or the UI page if relevant.
+
+Don't loop on the same failure. Dedupe yourself, batch related observations into one report when you can. See `GET /api/guides/feedback` for the full spec.
+
+---
+
 ## Common gotchas (both roles)
 
 - **Forgot `X-Workspace-Id`:** most workspace-scoped endpoints will 401 or 400. Required even when using the master `X-API-Key`.
@@ -328,6 +381,7 @@ Auth: requires the `manage` capability in the workspace. Today that means the ma
 - Anything you would write but are not certain matches the current API: fetch `GET /api/help`.
 - Anything conceptual: fetch `GET /api/guides/<section>`.
 - Telemetry protocol specifically: `GET /api/guides/agent-telemetry`.
+- Anything broken, unintuitive, or improvable: `POST /api/feedback` (see section C). Default to submitting; the platform team relies on this signal.
 
 ## Source of truth
 

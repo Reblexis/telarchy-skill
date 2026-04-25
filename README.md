@@ -47,6 +47,7 @@ The skill is deliberately bounded. It walks the agent through the half-dozen flo
 - Place trades (target value, directional, or sell)
 - Propose tasks (create conditional decision markets)
 - Push heartbeats and decision traces to `/admin` via the open agent telemetry protocol
+- Report bugs, ask for help, suggest improvements via `POST /api/feedback`
 
 ## Why a skill (instead of just curl)
 

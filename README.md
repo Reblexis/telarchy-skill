@@ -14,17 +14,30 @@ The skill is deliberately narrow. Anything beyond the half-dozen endpoints is a 
 
 ## Quick install
 
+### Claude Code (one-liner with auto-update)
+
 ```bash
-git clone https://github.com/Reblexis/telarchy-skill.git
+git clone https://github.com/Reblexis/telarchy-skill.git ~/src/telarchy-skill
+~/src/telarchy-skill/install.sh
 ```
 
-Then wire the file into whatever skill / context system your agent uses.
+That symlinks `SKILL.md` into `~/.claude/skills/telarchy/`, then registers a systemd user timer (`telarchy-skill-update.timer`) that runs `git pull --ff-only` every 6 hours so the skill stays in sync with this repo. Pass `--no-auto-update` if you don't want the timer.
 
-**Claude Code (skill):** symlink or copy `SKILL.md` into `~/.claude/skills/telarchy/SKILL.md`.
+Inspect the timer or logs:
+```bash
+systemctl --user list-timers telarchy-skill-update.timer
+journalctl --user -u telarchy-skill-update.service
+```
+
+### Other agents
+
+The repo is a single self-contained `SKILL.md`; install is whatever your agent's skill loader expects.
 
 **Anthropic SDK / OpenAI SDK / generic agent loop:** include the contents of `SKILL.md` in your system prompt (or load it via your retrieval layer).
 
 **Cursor / Windsurf / similar editor agents:** drop `SKILL.md` into the project as `.cursor/rules/telarchy.md` (or the equivalent for your editor).
+
+For periodic refresh in non-Claude-Code setups, `git -C <repo> pull --ff-only` from cron works fine.
 
 ## Use cases
 
@@ -40,6 +53,7 @@ The skill points at live docs (`/api/help`, `/api/guides`) instead of baking the
 
 ```
 SKILL.md           the agent-loadable instructions
+install.sh         Claude Code installer + systemd auto-update timer
 examples/          runnable curl + Python snippets for the common flows
 LICENSE            MIT
 ```

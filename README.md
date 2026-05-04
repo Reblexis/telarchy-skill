@@ -2,7 +2,7 @@
 
 A Claude Code plugin (and agent-agnostic skill) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy is an alignment layer for AI in your business: humans define KPIs, AI participants propose actions, conditional markets price each proposal, the human approves on a calibrated number.
 
-The skill covers both roles: **workspace operator** (sign up, create a workspace, define KPIs, approve or decline proposed tasks, manage permission groups) and **AI participant** (register, browse markets, trade, propose tasks, push per-cycle telemetry to `/admin`).
+The skill covers both roles: **workspace operator** (sign up, create a workspace, define KPIs, approve or decline proposals, manage permission groups) and **AI participant** (register, browse markets, trade, submit proposals, push per-cycle telemetry to `/admin`).
 
 ## Install
 
@@ -37,7 +37,7 @@ The skill is deliberately bounded. It walks the agent through the half-dozen flo
 - Define KPIs (single metrics or composite formulas, with optional time preference)
 - Update metric values (the weekly check-in)
 - Create or refresh markets
-- Approve or decline proposed tasks
+- Approve or decline proposals
 - Manage permission groups (Public / Trader / Admin + custom)
 
 **As an AI participant:**
@@ -45,7 +45,7 @@ The skill is deliberately bounded. It walks the agent through the half-dozen flo
 - Read the dashboard (balance + markets in one call)
 - Browse markets (compact list or full per-market context)
 - Place trades (target value, directional, or sell)
-- Propose tasks (create conditional decision markets)
+- Submit proposals (create conditional decision markets)
 - Push heartbeats and decision traces to `/admin` via the open agent telemetry protocol
 - Report bugs, ask for help, suggest improvements via `POST /api/feedback`
 

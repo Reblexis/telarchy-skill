@@ -135,6 +135,8 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/predictions/markets
 
 `targetDate` accepts year (`2026`), month (`2026-12`), ISO week (`2026-W52`), day (`2026-12-31`), or relative (`+10d`, `+2w`, `+3m`, `+1y`).
 
+`targetDate` is the *input form* (granular). Every market resolves at the **end** of that period, not the start: `2026-06` resolves on `2026-06-30`, `2026` on `2026-12-31`, `2026-W24` on the Sunday of that ISO week. Market API responses carry a companion field `resolvesOn` (exact `YYYY-MM-DD`) with the resolution day pre-computed. When you reason about timing (deadlines, trailing windows, sale calendars), read `resolvesOn` and do not re-interpret `targetDate` yourself.
+
 ### A.5 Approve or decline a proposal
 
 When any participant submits a proposal with `POST /api/proposals`, you (as the workspace admin) see it with conditional-market predictions.
@@ -213,9 +215,10 @@ curl -s https://telarchy.com/api/predictions/markets \
   -H "X-Agent-Key: $TELARCHY_AGENT_KEY" \
   -H "X-Workspace-Id: <workspaceId>"
 # Default returns only tradeable markets (status=open: active, not resolved,
-# not voided). Compact rows: id, metricName, targetDate, consensus,
-# probability, rangeMin, rangeMax, liquidity, status. Sorted
-# earliest-resolution first.
+# not voided). Compact rows: id, metricName, targetDate (granular input form),
+# resolvesOn (exact YYYY-MM-DD resolution date - use this for timing,
+# not targetDate), consensus, probability, rangeMin, rangeMax, liquidity,
+# status. Sorted earliest-resolution first.
 
 # To find markets you can still sell on (TP-deactivated, sell-only window):
 curl -s "https://telarchy.com/api/predictions/markets?status=closed" \

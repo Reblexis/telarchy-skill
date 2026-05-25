@@ -34,7 +34,7 @@ Both roles share the same API surface and concepts; only the auth path and the s
 
 1. **Fetch `/api/help`** (no auth) before constructing a non-trivial request. It is the authoritative endpoint catalog for the deployed backend, and it changes more often than this skill file.
 2. **Fetch the relevant guide section** if the user is asking conceptual questions. Sections include `overview`, `metric-design`, `creating`, `formulas`, `time-preference`, `markets`, `credits`, `proposals`, `sources`, `agent-telemetry`, `feedback`. Format: `curl -s https://telarchy.com/api/guides/<section>`.
-3. **Confirm the workspace** before any workspace-scoped call. Telarchy is multi-tenant; almost every endpoint needs `X-Workspace-Id`.
+3. **Confirm the workspace** before any workspace-scoped call. Telarchy is multi-tenant; almost every endpoint needs `X-Workspace-Id`. If you only hold an `X-Agent-Key` and do not yet know which workspaces it can reach, call `GET /api/workspaces` with that key and **no** `X-Workspace-Id` header. It returns the workspaces the key is a member of as `[{ id, name, visibility, memberRole, ... }]`; use each `id` as `X-Workspace-Id` and `memberRole` (`owner`/`admin`/`trader`/`viewer`) to know what you can do there.
 
 ## Auth model in one paragraph
 

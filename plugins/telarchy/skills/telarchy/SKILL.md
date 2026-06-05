@@ -98,7 +98,7 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/metrics \
 Notes:
 - `formula` defaults to `"0"` for leaf metrics. Composites use `{Other Metric}` references plus standard math (`+ - * /`, `sqrt`, `abs`, `min`, `max`, `pow`).
 - `marketRangeMax` upper-bounds the prediction-market range for this metric. Pick something realistic; markets are voided if you change it later.
-- `timePreference.halfLife` is in years. With `enabled: true`, the system auto-creates markets at decay-weighted future time points (10 quantile-midpoint samples). See `GET /api/guides/time-preference` for detail.
+- `timePreference.halfLife` is in years. With `enabled: true`, the system auto-creates markets at decay-weighted future time points (quantile-midpoint samples; count set by `density`, default 3). See `GET /api/guides/time-preference` for detail.
 - `timePreference.customHorizons` (optional, max 24 entries) adds explicit market dates beyond the curve: rolling offsets (`"+3m"`, `"+2w"`; re-resolved against today on every daily refresh so there is always a market that far out) or one-shot absolute dates (`"2026-12-31"`, `"2026-12"`, `"2026-W50"`, `"2026"`). Custom horizons work even with `enabled: false` (pure manual horizons, no exponential curve). Removing an entry deactivates its market; positions are kept and resolve normally.
 
 ### A.3 Update a KPI value (the weekly check-in)

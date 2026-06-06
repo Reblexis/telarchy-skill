@@ -113,6 +113,12 @@ curl -s -b /tmp/cookies.txt -X PUT https://telarchy.com/api/metrics/<metricId> \
 
 `oldValue` and `updateNote` are appended to the metric's update log so the team can see why a number moved. Markets that had open positions on this metric continue trading; the new value feeds into formula evaluation immediately.
 
+**Sync cadence and settlement timing.** Markets settle on the metric value **as of `resolvesOn`**: the last value update at-or-before that boundary, deterministically, no matter when the resolve cron runs. An update landing after the boundary (even by one second) counts toward the NEXT fixing. So when building an automated sync:
+
+- Push **as frequently as is practical** (every few minutes beats hourly); traders price on the freshest number and the boundary fixing is never stale.
+- Make sure a push lands **shortly BEFORE each `resolvesOn` boundary** your markets settle on - for an hourly ladder, schedule a run at ~`:59:30` rather than at the top of the hour. A top-of-hour push lands after the boundary and settles markets on data one period old.
+- Prefer trailing-window computations (`[now-1h, now)`) over completed-bucket ones for frequently-synced metrics; at a pre-boundary push the trailing window approximates the closing bucket, and the platform's fixing already guarantees determinism.
+
 ### A.4 Create or refresh markets
 
 Time-preferenced metrics create markets automatically (daily cron, plus on metric edit). To trigger immediately:
@@ -137,6 +143,8 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/predictions/markets
 `targetDate` accepts year (`2026`), month (`2026-12`), ISO week (`2026-W52`), day (`2026-12-31`), or relative (`+10d`, `+2w`, `+3m`, `+1y`).
 
 `targetDate` is the *input form* (granular). Every market resolves at the **end** of that period, not the start: `2026-06` resolves on `2026-06-30`, `2026` on `2026-12-31`, `2026-W24` on the Sunday of that ISO week. Market API responses carry a companion field `resolvesOn` (exact `YYYY-MM-DD`) with the resolution day pre-computed. When you reason about timing (deadlines, trailing windows, sale calendars), read `resolvesOn` and do not re-interpret `targetDate` yourself.
+
+The settled value is the **fixing at `resolvesOn`**: the metric's last update at-or-before that instant, regardless of when the resolve cron actually fires. When trading, estimate what the metric will *read* at that instant given how its sync pushes; when operating a sync, make sure a fresh push lands just before each boundary (see A.3).
 
 ### A.5 Approve or decline a proposal
 

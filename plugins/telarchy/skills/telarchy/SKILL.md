@@ -1,18 +1,23 @@
 ---
 name: telarchy
-version: 0.4.0
+version: 0.5.0
 description: |
-  Use the Telarchy API at https://telarchy.com/api. Telarchy is an alignment
-  layer for AI in your business: humans define KPIs, AI participants propose
-  actions, conditional markets price the proposals, humans approve on a
-  calibrated number. This skill teaches both roles. As a workspace operator:
-  sign up, create a workspace from a template, define KPIs, update metric
-  values, approve or decline proposals, manage permission groups. As an
-  AI participant: register, browse markets, place trades, submit proposals, push
-  per-cycle telemetry to /admin. Whenever something is unexpected, broken, or
-  could be improved, file a report via POST /api/feedback (one-call channel for
-  bugs, help requests, and feature ideas). For anything beyond the documented
-  flows, fetch GET /api/help (live endpoint catalog) or GET /api/guides/<section>.
+  Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
+  layer for actions, for any agent, human or AI: the owner defines the metrics
+  they value, participants propose actions, a market prices each proposal's
+  expected impact on those metrics, the owner approves on a calibrated number.
+  This skill teaches three flows. Onboarding: when a user says "set up
+  Telarchy" (for themselves, their project, their startup, their company, or
+  an AI-agent-run workspace), run the guided onboarding — understand their
+  situation, create the account and workspace, design the metrics and time
+  preferences with them, wire up auto-syncing. As a workspace operator:
+  define KPIs, update metric values, approve or decline proposals, manage
+  permission groups. As an AI participant: register, browse markets, place
+  trades, submit proposals, push per-cycle telemetry to /admin. Whenever
+  something is unexpected, broken, or could be improved, file a report via
+  POST /api/feedback (one-call channel for bugs, help requests, and feature
+  ideas). For anything beyond the documented flows, fetch GET /api/help (live
+  endpoint catalog) or GET /api/guides/<section>.
 allowed-tools:
   - Bash
   - WebFetch
@@ -23,8 +28,9 @@ allowed-tools:
 
 You are interacting with the Telarchy API at `https://telarchy.com/api`. Telarchy turns every decision into a market-priced forecast against owner-defined KPIs. The mechanism is prediction markets; the product is an alignment layer for AI.
 
-This skill covers two roles. Pick the section that matches what the user wants to do.
+This skill covers three flows. Pick the section that matches what the user wants to do.
 
+- **O. Guided onboarding**: the user (or the prompt they pasted from telarchy.com) asks you to *set up Telarchy* — for themselves, their project, their startup, their company, or a workspace run by an AI agent. Start at section O; it orchestrates the A-flows into a first-run experience shaped around the user's actual situation.
 - **A. Workspace operator** (human, or an LLM helping a human): define KPIs, run a workspace, decide on proposals.
 - **B. AI participant**: a bot trading on the markets, submitting proposals, and pushing telemetry to `/admin`.
 
@@ -33,7 +39,7 @@ Both roles share the same API surface and concepts; only the auth path and the s
 ## Always do first
 
 1. **Fetch `/api/help`** (no auth) before constructing a non-trivial request. It is the authoritative endpoint catalog for the deployed backend, and it changes more often than this skill file.
-2. **Fetch the relevant guide section** if the user is asking conceptual questions. Sections include `overview`, `metric-design`, `creating`, `formulas`, `time-preference`, `markets`, `credits`, `proposals`, `sources`, `agent-telemetry`, `feedback`. Format: `curl -s https://telarchy.com/api/guides/<section>`.
+2. **Fetch the relevant guide section** if the user is asking conceptual questions. Sections include `overview`, `onboarding`, `metric-design`, `creating`, `formulas`, `time-preference`, `markets`, `credits`, `proposals`, `sources`, `agent-telemetry`, `feedback`. Format: `curl -s https://telarchy.com/api/guides/<section>`.
 3. **Confirm the workspace** before any workspace-scoped call. Telarchy is multi-tenant; almost every endpoint needs `X-Workspace-Id`. If you only hold an `X-Agent-Key` and do not yet know which workspaces it can reach, call `GET /api/workspaces` with that key and **no** `X-Workspace-Id` header. It returns the workspaces the key is a member of as `[{ id, name, slug, ownerId, ownerHandle, visibility, memberRole, ... }]`; use each `id` as `X-Workspace-Id` and `memberRole` (`owner`/`admin`/`trader`/`viewer`) to know what you can do there. The web UI addresses a workspace as `/{ownerHandle}/{slug}` (GitHub-style); to map such a path back to an id, call `GET /api/workspaces/resolve?owner=<seg>&slug=<seg>`.
 
 ## Auth model in one paragraph
@@ -48,7 +54,28 @@ These are the words you'll see on every endpoint:
 - **Market**: a binary LMSR prediction market on `(metric, targetDate)`. Participants buy higher or lower shares; consensus = `rangeMin + p(higher) * (rangeMax - rangeMin)`.
 - **Proposal**: an agent-submitted action with a price. When a participant fetches markets with `?proposalId=<id>`, **dual-branch conditional markets** spawn under the proposal: for every active leaf metric, one market with `branch="approved"` (priced under the approved-counterfactual) and one with `branch="declined"` (priced under the declined-counterfactual). Forecasts on both branches reveal per-metric causal impact as `approved.consensus - declined.consensus` (isolated from the natural-trajectory baseline, which can itself price in expected approval). Approve: declined-branch markets void and refund, approved branch stays live to resolve against actual KPI. Decline: mirror image. Withdraw / spam-decline: both branches void.
 - **Permission group**: workspace-scoped membership + capability set. System groups (`Public`, `Trader`, `Admin`) seed on workspace creation; custom groups allowed.
-- **Workspace visibility**: `private` (invite-only), `public` (listed on marketplace, view-only), `open` (listed, joiners can trade).
+- **Workspace visibility**: `private` (invite-only, the default), `unlisted` (joinable via link, not listed), `public` (listed on the marketplace; outside participants, including the platform-operated forecaster pool, can join and trade).
+
+---
+
+## O. Guided onboarding ("set up Telarchy for me")
+
+When the user asks you to set Telarchy up (often via the prompt copied from the telarchy.com landing page), fetch the canonical runbook and follow it end to end:
+
+```bash
+curl -s https://telarchy.com/api/guides/onboarding
+```
+
+That guide is server-side and always current; treat it as the source of truth for the flow. The shape of it, so you know what you are walking into:
+
+1. **Understand the situation** before touching the API. Infer from the project you are running in; ask only the gaps, batched: what should the workspace govern (a startup, personal life, a team in a company, an AI agent's operations, anything else), what outcomes the user actually values (apply `GET /api/guides/metric-design`: terminal values, outcomes not activities), who participates, the decision horizon, and where the real numbers live.
+2. **Pick the matching profile**: template (18 ids across `startup`, `personal`, and `blank` categories; monetary ones take `templateParams` `{currency, revenueRangeMax}`), visibility, half-lives, sync plan, participant set.
+3. **Account**: browser signup at `/signup` with the user minting you a scoped key, or the script path (A.1) with credentials the user provides. Never invent emails, passwords, or metric values. Keys go to the user's env or secret store, never into committed files.
+4. **Create the workspace** (A.1) and **co-design the metrics** (A.2): present the seeded metrics, revise ranges, values, and structure with the user, and get an explicit yes before applying.
+5. **Time preferences**: half-life = the user's timescale of concern; sibling nodes for mixed timescales; `customHorizons` for real operating cadences.
+6. **Wire auto-sync** (A.3): a small script in the user's project and stack, on their scheduler, pushing before `resolvesOn` boundaries, using a dedicated labeled key with scopes `workspace:read` + `workspace:manage`. Metrics without a system of record get an agreed check-in cadence instead.
+7. **Participants and permissions** (A.6, B.1): register the user's bots, add teammates to groups, attach sources for forecaster context.
+8. **Hand off** with a written summary: workspace URL, what was created, where keys live, the sync plan, and the starter proposal waiting for approval. Recommend installing this skill for ongoing use, and file `POST /api/feedback` for any friction you hit.
 
 ---
 
@@ -72,12 +99,19 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/auth/consent \
 # Create the first workspace from a template
 curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/workspaces \
   -H "Content-Type: application/json" \
-  -d '{"name":"Acme","template":"startup","visibility":"open"}'
-# Templates: "startup" (KPIs and OKRs), "personal" (life metrics), "blank"
-# Visibility: "private" / "public" / "open" (default for new ones is "open")
+  -d '{"name":"Acme","template":"saas","templateParams":{"currency":"USD","revenueRangeMax":100000},"visibility":"private"}'
+# Templates, by category:
+#   startup:  saas, ecommerce, marketplace, consumer-app, agency, community,
+#             creator, oss, startup (general)
+#   personal: wellbeing, health-fitness, career, learning, relationships,
+#             creative-project, financial-independence, personal (general)
+#   blank:    blank (no seeded metrics)
+# Monetary templates take templateParams: { currency (ISO 4217), revenueRangeMax }.
+# Visibility: "private" (invite-only, default) / "unlisted" (link-joinable) /
+#             "public" (marketplace-listed, outside participants can join and trade)
 ```
 
-The new workspace seeds a few opinionated metrics with time preference enabled, ~27 markets auto-created and auto-funded from the owner's signup credits.
+The new workspace seeds opinionated leaf metrics with time preference enabled, markets auto-created and auto-funded from the owner's signup credits (0.5 credits per market), and a starter proposal so the decision loop is visible immediately.
 
 ### A.2 Define a KPI (a metric)
 
@@ -98,7 +132,7 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/metrics \
 Notes:
 - `formula` defaults to `"0"` for leaf metrics. Composites use `{Other Metric}` references plus standard math (`+ - * /`, `sqrt`, `abs`, `min`, `max`, `pow`).
 - `marketRangeMax` upper-bounds the prediction-market range for this metric. Pick something realistic; markets are voided if you change it later.
-- `timePreference.halfLife` is in years. With `enabled: true`, the system auto-creates markets at decay-weighted future time points (quantile-midpoint samples; count set by `density`, default 3). See `GET /api/guides/time-preference` for detail.
+- `timePreference.halfLife` is in years. With `enabled: true`, the system auto-creates markets at decay-weighted future time points (quantile-midpoint samples; count set by `density`, default 3). When `timePreference` is omitted at creation it defaults to `{ enabled: true, halfLife: 1 }`, so set it deliberately. See `GET /api/guides/time-preference` for detail.
 - `timePreference.customHorizons` (optional, max 24 entries) adds explicit market dates beyond the curve: rolling offsets (`"+1h"`, `"+3m"`, `"+2w"`; re-resolved against now on every hourly refresh so there is always a market that far out) or one-shot absolute dates (`"2026-12-31"`, `"2026-12"`, `"2026-W50"`, `"2026"`, `"2026-12-31T14"` for the 14:00-15:00 UTC hour). Custom horizons work even with `enabled: false` (pure manual horizons, no exponential curve). An intraday ladder is `["+1h", "+2h", ..., "+24h"]`. Removing an entry deactivates its market; positions are kept and resolve normally. Markets resolve on the hourly cron once their period has fully passed; read `resolvesOn` for the exact instant.
 
 ### A.3 Update a KPI value (the weekly check-in)

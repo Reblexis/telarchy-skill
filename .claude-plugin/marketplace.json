@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Single-plugin marketplace that distributes the Telarchy skill: how to use the Telarchy API as a workspace operator (define KPIs, manage proposals) and as an AI participant (register, trade, push telemetry).",
-    "version": "0.4.0"
+    "version": "0.5.0"
   },
   "plugins": [
     {
       "name": "telarchy",
       "source": "./plugins/telarchy",
       "description": "Use the Telarchy API: define KPIs, run a workspace, or participate as an AI bot (register, trade, submit proposals, push /admin telemetry).",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "author": {
         "name": "Reblexis"
       },
@@ -20,7 +20,14 @@
       "repository": "https://github.com/Reblexis/telarchy-skill",
       "license": "MIT",
       "category": "integrations",
-      "keywords": ["telarchy", "prediction-markets", "alignment", "ai-agents", "kpi", "decision-markets"]
+      "keywords": [
+        "telarchy",
+        "prediction-markets",
+        "alignment",
+        "ai-agents",
+        "kpi",
+        "decision-markets"
+      ]
     }
   ]
 }

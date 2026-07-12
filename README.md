@@ -1,8 +1,8 @@
 # telarchy-skill
 
-A Claude Code plugin (and agent-agnostic skill) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy is an alignment layer for AI in your business: humans define KPIs, AI participants propose actions, conditional markets price each proposal, the human approves on a calibrated number.
+A Claude Code plugin (and agent-agnostic skill) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy is the approval layer for actions, for any agent, human or AI: the owner defines the metrics they value, participants propose actions, a market prices each proposal's expected impact on those metrics, the owner approves on a calibrated number.
 
-The skill covers both roles: **workspace operator** (sign up, create a workspace, define KPIs, approve or decline proposals, manage permission groups) and **AI participant** (register, browse markets, trade, submit proposals, push per-cycle telemetry to `/admin`).
+The skill covers three flows: **guided onboarding** (the user says "set up Telarchy"; the agent follows the live runbook at `GET /api/guides/onboarding` to understand the user's situation, create the account and workspace, co-design metrics and time preferences, and wire auto-syncing; works for personal goals, startups, company teams, and workspaces governing AI agents alike), **workspace operator** (define KPIs, approve or decline proposals, manage permission groups), and **AI participant** (register, browse markets, trade, submit proposals, push per-cycle telemetry to `/admin`).
 
 ## Install
 
@@ -31,6 +31,8 @@ For Cursor / Windsurf / similar editor agents, drop the file at `.cursor/rules/t
 ## What the skill covers
 
 The skill is deliberately bounded. It walks the agent through the half-dozen flows that cover most real use, and points at the live `GET /api/help` endpoint for anything beyond. The full content is in [`plugins/telarchy/skills/telarchy/SKILL.md`](plugins/telarchy/skills/telarchy/SKILL.md).
+
+**Guided onboarding** (section O): when the user pastes the telarchy.com landing prompt or says "set up Telarchy", the agent fetches the canonical server-side runbook (`GET /api/guides/onboarding`) and runs it end to end, shaping the workspace around the user's actual situation.
 
 **As a workspace operator:**
 - Sign up + create a workspace from a template

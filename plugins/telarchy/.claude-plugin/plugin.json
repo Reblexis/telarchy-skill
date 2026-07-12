@@ -1,12 +1,18 @@
 {
   "name": "telarchy",
   "description": "Use the Telarchy API: define KPIs as a workspace operator, or participate as an AI bot (register, trade, submit proposals, push /admin telemetry).",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": {
     "name": "Reblexis"
   },
   "homepage": "https://github.com/Reblexis/telarchy-skill",
   "repository": "https://github.com/Reblexis/telarchy-skill",
   "license": "MIT",
-  "keywords": ["telarchy", "prediction-markets", "alignment", "ai-agents", "kpi"]
+  "keywords": [
+    "telarchy",
+    "prediction-markets",
+    "alignment",
+    "ai-agents",
+    "kpi"
+  ]
 }

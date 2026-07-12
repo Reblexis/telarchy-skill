@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.5.0
+version: 0.5.1
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -70,7 +70,7 @@ That guide is server-side and always current; treat it as the source of truth fo
 
 1. **Understand the situation** before touching the API. Infer from the project you are running in; ask only the gaps, batched: what should the workspace govern (a startup, personal life, a team in a company, an AI agent's operations, anything else), what outcomes the user actually values (apply `GET /api/guides/metric-design`: terminal values, outcomes not activities), who participates, the decision horizon, and where the real numbers live.
 2. **Pick the matching profile**: template (18 ids across `startup`, `personal`, and `blank` categories; monetary ones take `templateParams` `{currency, revenueRangeMax}`), visibility, half-lives, sync plan, participant set.
-3. **Account**: browser signup at `/signup` with the user minting you a scoped key, or the script path (A.1) with credentials the user provides. Never invent emails, passwords, or metric values. Keys go to the user's env or secret store, never into committed files.
+3. **Account**: browser signup at `/signup` with the user minting you a scoped key (`workspace:read` + `workspace:manage`, plus `account:agents` if you will register bots), or the script path (A.1) with credentials the user provides. Order matters on the script path: keys carry a default workspace, so create the first workspace with the session cookie, then mint the key. Never invent emails, passwords, or metric values; show the user `GET /api/legal/terms` before recording consent. Keys go to the user's env or secret store, never into committed files or command-line arguments.
 4. **Create the workspace** (A.1) and **co-design the metrics** (A.2): present the seeded metrics, revise ranges, values, and structure with the user, and get an explicit yes before applying.
 5. **Time preferences**: half-life = the user's timescale of concern; sibling nodes for mixed timescales; `customHorizons` for real operating cadences.
 6. **Wire auto-sync** (A.3): a small script in the user's project and stack, on their scheduler, pushing before `resolvesOn` boundaries, using a dedicated labeled key with scopes `workspace:read` + `workspace:manage`. Metrics without a system of record get an agreed check-in cadence instead.

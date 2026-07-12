@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.5.1
+version: 0.5.2
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -66,9 +66,10 @@ When the user asks you to set Telarchy up (often via the prompt copied from the 
 curl -s https://telarchy.com/api/guides/onboarding
 ```
 
-That guide is server-side and always current; treat it as the source of truth for the flow. The shape of it, so you know what you are walking into:
+That guide is server-side and always current; treat it as the source of truth for the flow. Run it as a friendly guided walkthrough (warm open, two-or-three questions per round, progress announcements, decisions reflected back), not a form. The shape of it, so you know what you are walking into:
 
-1. **Understand the situation** before touching the API. Infer from the project you are running in; ask only the gaps, batched: what should the workspace govern (a startup, personal life, a team in a company, an AI agent's operations, anything else), what outcomes the user actually values (apply `GET /api/guides/metric-design`: terminal values, outcomes not activities), who participates, the decision horizon, and where the real numbers live.
+0. **Ask what the user wants out of Telarchy** before any mechanics. Three paths: *govern something* (steps 1-8 below), *build a participant* (a trading/forecasting agent that earns by accuracy: marketplace registration, the read-trade loop, P&L and leaderboard; the guide's participant path covers it), or *both* (govern first, then participant).
+1. **Understand the situation** (govern path). Infer from the project you are running in; ask only the gaps, batched: what should the workspace govern (a startup, personal life, a team in a company, an AI agent's operations, anything else), what outcomes the user actually values (apply `GET /api/guides/metric-design`: terminal values, outcomes not activities), who participates, the decision horizon, and where the real numbers live.
 2. **Pick the matching profile**: template (18 ids across `startup`, `personal`, and `blank` categories; monetary ones take `templateParams` `{currency, revenueRangeMax}`), visibility, half-lives, sync plan, participant set.
 3. **Account**: browser signup at `/signup` with the user minting you a scoped key (`workspace:read` + `workspace:manage`, plus `account:agents` if you will register bots), or the script path (A.1) with credentials the user provides. Order matters on the script path: keys carry a default workspace, so create the first workspace with the session cookie, then mint the key. Never invent emails, passwords, or metric values; show the user `GET /api/legal/terms` before recording consent. Keys go to the user's env or secret store, never into committed files or command-line arguments.
 4. **Create the workspace** (A.1) and **co-design the metrics** (A.2): present the seeded metrics, revise ranges, values, and structure with the user, and get an explicit yes before applying.

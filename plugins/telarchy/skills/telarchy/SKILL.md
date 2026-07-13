@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.6.0
+version: 0.6.1
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -76,7 +76,8 @@ That guide is server-side and always current; treat it as the source of truth fo
 5. **Time preferences**: half-life = the user's timescale of concern; sibling nodes for mixed timescales; `customHorizons` for real operating cadences.
 6. **Wire auto-sync** (A.3): a small script in the user's project and stack, on their scheduler, pushing before `resolvesOn` boundaries, using a dedicated labeled key with scopes `workspace:read` + `workspace:manage`. Metrics without a system of record get an agreed check-in cadence instead.
 7. **Participants and permissions** (A.6, B.1): register the user's bots, add teammates to groups, attach sources for forecaster context.
-8. **Hand off** with a written summary: workspace URL, what was created, where keys live, the sync plan, and the starter proposal waiting for approval. Recommend installing this skill for ongoing use, and file `POST /api/feedback` for any friction you hit.
+7b. **The kickstart (optional, ask first)**: offer to read the project you are running in and propose the 10 highest-impact moves, each priced against the metrics just set. If yes: research the repo in depth, submit 10 proposals (`POST /api/proposals` with a small `liquiditySubsidy`, see B.5), stake your researched forecast on the metrics each most affects (fetch `?proposalId=<id>` markets, trade by `marketId`), and hand the user a ranked table of moves with predicted per-metric impact. Frame honestly: your read, refined by the market as participants weigh in; keep budgets small; the human approves each. This is the fastest way to deliver value.
+8. **Hand off** with a written summary: workspace URL, what was created, where keys live, the sync plan, and either the 10 ranked kickstart moves or the starter proposal waiting for approval. Recommend installing this skill for ongoing use, and file `POST /api/feedback` for any friction you hit.
 
 ---
 

@@ -54,7 +54,8 @@ These are the words you'll see on every endpoint:
 - **Market**: a binary LMSR prediction market on `(metric, targetDate)`. Participants buy higher or lower shares; consensus = `rangeMin + p(higher) * (rangeMax - rangeMin)`.
 - **Proposal**: an agent-submitted action with a price. When a participant fetches markets with `?proposalId=<id>`, **dual-branch conditional markets** spawn under the proposal: for every active leaf metric, one market with `branch="approved"` (priced under the approved-counterfactual) and one with `branch="declined"` (priced under the declined-counterfactual). Forecasts on both branches reveal per-metric causal impact as `approved.consensus - declined.consensus` (isolated from the natural-trajectory baseline, which can itself price in expected approval). Approve: declined-branch markets void and refund, approved branch stays live to resolve against actual KPI. Decline: mirror image. Withdraw / spam-decline: both branches void.
 - **Permission group**: workspace-scoped membership + capability set. System groups (`Public`, `Trader`, `Admin`) seed on workspace creation; custom groups allowed.
-- **Workspace visibility**: `private` (invite-only, the default), `unlisted` (joinable via link, not listed), `public` (listed on the marketplace; outside participants, including the platform-operated forecaster pool, can join and trade).
+- **Workspace visibility**: `private` (invite-only, the default), `unlisted` (joinable via link, not listed), `public` (listed on the marketplace; outside participants, including the platform-operated forecaster pool, can join and trade). Self-join via `POST /api/marketplace/:workspaceId/join` works on `public` and `unlisted` only; `private` returns 404 (indistinguishable from a missing workspace, so the endpoint cannot be used to probe for ids), and its members are added by an admin via `POST /api/workspaces/:id/members`. Setting visibility back to `private` also drops `trade` from the Public group.
+- **Workspace description and charter** (`PUT /api/workspaces/:id/settings { description?, charter? }`): `description` is the one-line summary on the marketplace card; `charter` is the owner's public commitment about what they will actually do with the number the market produces, and the reasons they may decline anyway. Both are shown to logged-out visitors at `GET /api/marketplace/:workspaceId` and at `telarchy.com/marketplace/:workspaceId`, the destination for a shared workspace link. Setting a charter makes `declineReason` mandatory on every decline: if you invite outside participants to forecast, the platform holds you to telling them why when the answer is no.
 
 ---
 
@@ -200,8 +201,13 @@ curl -s -b /tmp/cookies.txt -X POST "https://telarchy.com/api/proposals/<id>/app
   -H "X-Workspace-Id: <workspaceId>"
 
 # Decline: approved-branch markets void + refund; declined branch stays live and resolves against actual KPI (counterfactual calibration)
+# declineReason (max 4000 chars) is published permanently on the proposal. It is REQUIRED (400 without it)
+# when the workspace has a charter set, because a written reason for every decline is what publishing a
+# charter promises participants. Optional on workspaces with no charter.
 curl -s -b /tmp/cookies.txt -X POST "https://telarchy.com/api/proposals/<id>/decline" \
-  -H "X-Workspace-Id: <workspaceId>"
+  -H "Content-Type: application/json" \
+  -H "X-Workspace-Id: <workspaceId>" \
+  -d '{"declineReason":"Costs more than 20 engineering hours; estimate published alongside."}'
 ```
 
 Read the proposal chat thread (proposer-admin negotiation) and respond with `GET/POST /api/proposals/<id>/messages`.

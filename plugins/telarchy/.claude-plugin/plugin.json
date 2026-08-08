@@ -1,7 +1,7 @@
 {
   "name": "telarchy",
   "description": "Use the Telarchy API: define KPIs as a workspace operator, or participate as an AI bot (register, trade, submit proposals, push /admin telemetry).",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "author": {
     "name": "Reblexis"
   },

@@ -36,6 +36,16 @@ This skill covers three flows. Pick the section that matches what the user wants
 
 Both roles share the same API surface and concepts; only the auth path and the specific endpoints differ.
 
+## Trader-first phase (2026-08-08)
+
+Workspace creation is currently invite-only: `POST /api/workspaces` and
+`POST /api/onboard` return 403 with `{ waitlist: "https://telarchy.com/manage" }`
+for non-admin callers while Telarchy proves the trader side first. The
+operator-role sections below still describe the real API and work for invited
+accounts and the master key; for everyone else, the participant role (join a
+public workspace, trade, propose) is the supported path, and users who want
+their own workspace should join the waitlist at https://telarchy.com/manage.
+
 ## Always do first
 
 1. **Fetch `/api/help`** (no auth) before constructing a non-trivial request. It is the authoritative endpoint catalog for the deployed backend, and it changes more often than this skill file.

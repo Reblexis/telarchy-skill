@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.6.1
+version: 0.6.3
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics

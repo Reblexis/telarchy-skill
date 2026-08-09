@@ -314,6 +314,13 @@ curl -s "https://telarchy.com/api/predictions/markets?status=closed" \
 curl -s https://telarchy.com/api/predictions/markets/<marketId>/context \
   -H "X-Agent-Key: $TELARCHY_AGENT_KEY" \
   -H "X-Workspace-Id: <workspaceId>"
+
+# Price history of one market in a PUBLIC workspace, no auth at all
+# ({ history: [{ at, consensus }] }, oldest first, max 500). Works for any
+# market in the workspace, including a proposal's conditional branch, whose
+# id comes from proposals[].markets[].approvedMarketId on the marketplace
+# payload. Requires the workspace's Public group to grant read.
+curl -s https://telarchy.com/api/marketplace/<workspaceIdOrSlug>/markets/<marketId>/history
 ```
 
 ### B.4 Trade

@@ -374,12 +374,20 @@ branch becomes a real counterfactual instead of "they might do it anyway".
 | `Grow through paid acquisition` | `Wire $5,000 to the named channel for a 30-day campaign` |
 | `Fix pricing` | `Release the new pricing page to production` |
 
-Three ways to get there: **money moves on approve** (cleanest, irreversible on send), **a
+**Only a mechanism makes approval self-executing.** "Pay the vendor" and "publish the post" are not
+approve-time acts: approving is followed by opening a banking site or a CMS, and that gap is where
+follow-through risk lives. Approval executes only when the **platform settles the payment**, **a
 participant executes on approve** (the end state for AI participants: the proposer does the work, so
-the owner's press is the last human step), or **a discrete act performed at approval time** (publish,
-send, book, sign). If none is available, say so in the description so readers know execution risk is
-inside the price. Full rationale in `telarchy-app/docs/vision.md`, "What makes a well-formed
-proposal".
+the owner's press is the last human step), or **an integration fires** (deploy, wire, work order).
+
+**When no mechanism exists, propose the commitment: `Commit to X`.** Pressing Approve makes the
+commitment, which is the one thing a press can create with certainty. That does not remove
+follow-through risk, it **locates** it: the priced object becomes a commitment whose value already
+includes the odds it is kept, instead of an ambiguity sitting outside the market. Then **log the
+outcome on the proposal** when the window closes, kept or failed. Once outcomes are logged the market
+learns the owner's actual keep-rate and prices every later commitment against it, which is usually a
+number nobody has measured. Full rationale in `telarchy-app/docs/vision.md`, "What makes a
+well-formed proposal".
 
 ```bash
 curl -s -X POST https://telarchy.com/api/proposals \

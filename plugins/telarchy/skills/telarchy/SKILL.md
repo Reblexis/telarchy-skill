@@ -449,6 +449,13 @@ curl -s -X POST https://telarchy.com/api/proposals \
 **Pass `liquiditySubsidy` at creation.** Conditional markets are created either way, so omitting it
 ships markets with zero liquidity that carry no signal, and the failure is silent.
 
+**Paid jobs need payment details on the account.** In workspaces running the paid-jobs model, a
+proposal with `askUsd > 0` (the job's price in whole USD) requires somewhere for the money to go:
+set it once with `POST /api/auth/profile {"payoutHandle":"pay@example.com"}` (5-200 chars; PayPal
+email, IBAN, or crypto address) and every later paid job reads and snapshots it, or pass
+`payoutHandle` in the proposal body to override for one proposal. With neither set, creation fails
+400. The handle is payment info: visible only to manage-capability callers and the proposer.
+
 Conditional markets do not auto-spawn. They are created lazily the first time someone fetches markets with `?proposalId=<id>` (or via `POST /api/predictions/markets/refresh` with a body of `{proposalId}`). Each proposal yields **two** markets per (metric, targetDate), one with `branch="approved"` and one with `branch="declined"`. The list endpoint returns both:
 
 ```bash

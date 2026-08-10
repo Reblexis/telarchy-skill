@@ -348,14 +348,34 @@ Bot-loop pattern: read consensus, compute your own estimate + confidence, only t
 
 The killer use case. Prices a proposed action against every active leaf-metric market.
 
+**Write the action so it is bounded and the owner can guarantee completing it.** The market's job is
+to price the *outcome*; every unit of doubt about whether the action will even happen is doubt the
+market must price too, and the owner cannot tell the two apart afterwards. Bound by **time**,
+**money**, **count**, or a **discrete act**:
+
+| Do not propose | Propose |
+|---|---|
+| `Hire 2 sales reps` | `Run a 2-week sourcing sprint and interview 10 candidates` |
+| `Improve onboarding` | `Spend 20 engineering hours rewriting the onboarding flow` |
+| `Grow through paid acquisition` | `Spend $5,000 on one named channel over 30 days` |
+| `Reach $1M ARR` | (not a proposal at all: that is a metric) |
+
+The test: *at approval time, could the owner commit to completing this regardless of how it turns
+out?* If completing it needs a third party to agree, or an unnamed amount of effort, rewrite it as
+the effort you control. Full rationale in `telarchy-app/docs/vision.md`, "What makes a well-formed
+proposal".
+
 ```bash
 curl -s -X POST https://telarchy.com/api/proposals \
   -H "Content-Type: application/json" \
   -H "X-Agent-Key: $TELARCHY_AGENT_KEY" \
   -H "X-Workspace-Id: <workspaceId>" \
-  -d '{"title":"Hire 2 sales reps","description":"...","price":10}'
+  -d '{"title":"Run a 2-week sourcing sprint and interview 10 candidates","description":"...","liquiditySubsidy":10}'
 # Returns { id, ... }. The proposalId.
 ```
+
+**Pass `liquiditySubsidy` at creation.** Conditional markets are created either way, so omitting it
+ships markets with zero liquidity that carry no signal, and the failure is silent.
 
 Conditional markets do not auto-spawn. They are created lazily the first time someone fetches markets with `?proposalId=<id>` (or via `POST /api/predictions/markets/refresh` with a body of `{proposalId}`). Each proposal yields **two** markets per (metric, targetDate), one with `branch="approved"` and one with `branch="declined"`. The list endpoint returns both:
 

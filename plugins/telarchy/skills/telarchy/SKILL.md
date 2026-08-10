@@ -362,7 +362,23 @@ market must price too, and the owner cannot tell the two apart afterwards. Bound
 
 The test: *at approval time, could the owner commit to completing this regardless of how it turns
 out?* If completing it needs a third party to agree, or an unnamed amount of effort, rewrite it as
-the effort you control. Full rationale in `telarchy-app/docs/vision.md`, "What makes a well-formed
+the effort you control.
+
+**Better still, write it so that pressing Approve IS the action.** Then the market prices only "what
+happens if they approve vs decline", with nothing between the button and the world, and the declined
+branch becomes a real counterfactual instead of "they might do it anyway".
+
+| Approve does nothing yet | Approve *is* the action |
+|---|---|
+| `Spend 20 engineering hours rewriting onboarding` | `Assign the onboarding rewrite as this sprint's committed work` |
+| `Grow through paid acquisition` | `Wire $5,000 to the named channel for a 30-day campaign` |
+| `Fix pricing` | `Release the new pricing page to production` |
+
+Three ways to get there: **money moves on approve** (cleanest, irreversible on send), **a
+participant executes on approve** (the end state for AI participants: the proposer does the work, so
+the owner's press is the last human step), or **a discrete act performed at approval time** (publish,
+send, book, sign). If none is available, say so in the description so readers know execution risk is
+inside the price. Full rationale in `telarchy-app/docs/vision.md`, "What makes a well-formed
 proposal".
 
 ```bash

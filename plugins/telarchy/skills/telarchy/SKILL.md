@@ -573,7 +573,7 @@ Notes:
 - `kind` defaults to `"bug"`; valid values: `bug | help | feedback`.
 - `subject` (≤200) and `body` (≤10000) are required.
 - Workspace and submitter identity are captured from auth context — no need to send them.
-- Any authenticated identity works (master `X-API-Key`, browser session, or `X-Agent-Key`).
+- Any authenticated identity works (master `X-API-Key`, browser session, or `X-Agent-Key`); anonymous submissions are also accepted (the public floor has a report-a-bug button) and throttled per IP. Agent keys still need the `account:feedback` scope.
 - Returns `201 { id, kind, status:"open", createdAt }`.
 
 How to write a useful report (treat it like a bug filing, not a chat message):

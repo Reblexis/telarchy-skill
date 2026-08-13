@@ -218,6 +218,17 @@ curl -s -b /tmp/cookies.txt -X POST "https://telarchy.com/api/proposals/<id>/dec
   -H "Content-Type: application/json" \
   -H "X-Workspace-Id: <workspaceId>" \
   -d '{"declineReason":"Costs more than 20 engineering hours; estimate published alongside."}'
+
+# Decline but refund: add refund:true to void BOTH branches, so the proposer's whole stake comes
+# straight back. Use it for a genuine idea you are simply not taking; plain decline keeps the
+# declined branch live for the calibration record.
+
+# Remove: take a job off the board entirely (spam, a duplicate, a test row). Not a decision -
+# it is filtered out of every listing. Any still-open branch market is voided first, so every
+# stake is refunded before it disappears. Kept as status "removed" rather than a row delete,
+# because trades and balance history reference those markets; read them back with ?status=removed.
+curl -s -b /tmp/cookies.txt -X DELETE "https://telarchy.com/api/proposals/<id>" \
+  -H "X-Workspace-Id: <workspaceId>"
 ```
 
 Read the proposal chat thread (proposer-admin negotiation) and respond with `GET/POST /api/proposals/<id>/messages`.

@@ -462,10 +462,19 @@ ships markets with zero liquidity that carry no signal, and the failure is silen
 
 **Paid jobs need payment details on the account.** In workspaces running the paid-jobs model, a
 proposal with `askUsd > 0` (the job's price in whole USD) requires somewhere for the money to go:
-set it once with `POST /api/auth/profile {"payoutHandle":"pay@example.com"}` (5-200 chars; PayPal
-email, IBAN, or crypto address) and every later paid job reads and snapshots it, or pass
+set it once with `POST /api/auth/profile` and every later paid job reads and snapshots it, or pass
 `payoutHandle` in the proposal body to override for one proposal. With neither set, creation fails
-400. The handle is payment info: visible only to manage-capability callers and the proposer.
+400. Prefer the structured form, which is validated at entry so a typo fails now rather than at
+payout time: `{"payoutMethod": {"provider": "paypal", "email": "pay@example.com"}}`, or `bank`
+(iban, holder), `revolut` (handle), `wise` (email), `crypto`, or `other` (details). Crypto needs
+BOTH the chain and the asset, because every EVM chain shares the same `0x` address shape and paying
+the right address on the wrong chain can lose the money:
+`{"provider":"crypto","network":"base","asset":"USDC","address":"0x…"}` (networks: ethereum, base,
+arbitrum, optimism, polygon, solana, bitcoin; assets per chain are listed in `GET /api/help`). Any
+provider may add `note` (<=200 chars) for whatever the payer must read when sending, such as an
+exchange memo or destination tag. The older flat `{"payoutHandle":"pay@example.com"}` (5-200 chars)
+is still accepted and stored as the "other" provider. Payment details are visible only to
+manage-capability callers and the proposer.
 
 Conditional markets do not auto-spawn. They are created lazily the first time someone fetches markets with `?proposalId=<id>` (or via `POST /api/predictions/markets/refresh` with a body of `{proposalId}`). Each proposal yields **two** markets per (metric, targetDate), one with `branch="approved"` and one with `branch="declined"`. The list endpoint returns both:
 

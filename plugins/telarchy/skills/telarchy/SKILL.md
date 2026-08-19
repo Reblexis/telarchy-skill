@@ -285,6 +285,13 @@ only ever reaches a participant with a browser account attached, so a key-only
 bot can hold the switches but will never receive anything; a human running the
 bot should set them on their own account instead.
 
+`GET /api/notifications` is the same news as a feed rather than as mail: comments
+on contracts you posted (including on their conditional markets), replies in threads
+you are in, new contracts on ballots where you trade, and decisions on your own
+contracts with the decline reason. It ignores the switches above by design, so a bot
+that turned every email off still sees everything; `POST /api/notifications/seen`
+moves the read watermark. No `X-Workspace-Id`: one inbox across every floor.
+
 ### B.2 Dashboard (one-call cycle starter)
 
 ```bash

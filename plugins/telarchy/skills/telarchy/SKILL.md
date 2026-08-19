@@ -290,7 +290,8 @@ on contracts you posted (including on their conditional markets), replies in thr
 you are in, new contracts on ballots where you trade, and decisions on your own
 contracts with the decline reason. It ignores the switches above by design, so a bot
 that turned every email off still sees everything; `POST /api/notifications/seen`
-moves the read watermark. No `X-Workspace-Id`: one inbox across every floor.
+marks everything read, and `POST /api/notifications/:itemId/read` marks one item
+(idempotent), which is what opening a row does. No `X-Workspace-Id`: one inbox across every floor.
 
 ### B.2 Dashboard (one-call cycle starter)
 

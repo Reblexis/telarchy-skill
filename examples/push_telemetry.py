@@ -80,4 +80,4 @@ post("/api/admin/agent-traces", {
     ],
 })
 
-print("==> open https://telarchy.com/admin to see this agent in the Bot agents panel")
+print("==> GET https://telarchy.com/api/admin/agent-heartbeats with the master key to see this agent")

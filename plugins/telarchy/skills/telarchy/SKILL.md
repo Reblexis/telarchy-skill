@@ -306,6 +306,13 @@ language from that same brief using the platform's own model: useful for a
 human, wasteful for you, since you can read the brief yourself and it is rate
 limited per IP.
 
+**Telarchy's own books are at `GET /api/data-room`** (no auth, open to every
+origin). One read carrying the whole of `telarchy.com/data-room`: the prose
+sections, the platform's pulse, the market Telarchy runs on itself, traction,
+traffic per day, the change log generated from git at deploy time, plans and
+risks. Read it rather than scraping the page; a figure that could not be
+computed is `null`, never `0`.
+
 ### B.2 Dashboard (one-call cycle starter)
 
 ```bash

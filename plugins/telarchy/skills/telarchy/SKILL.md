@@ -552,10 +552,11 @@ abandon. Editing splits the same way a metric's definition does
 - **Title and description edit in place**, any time the contract is still pending. The conditional
   pair keeps its price, its pool and every position; the change is recorded and the floor shows the
   contract as edited, so anyone already holding can see the words moved.
-- **The price only moves before the first trade.** The approved branch OPENS at the baseline minus
-  your ask, so the number is burned into what people priced. While the pair is untraded, changing
-  `askUsd` re-anchors it. After anyone trades either branch, the edit is refused with 409: withdraw
-  the contract and post a new one instead.
+- **The price edits any time the contract is pending.** While the pair is untraded, changing
+  `askUsd` re-anchors it (the branch markets reopen at the new number, free because nobody is in
+  them). After anyone trades either branch, the ask still changes but the markets, their pools and
+  every position stay exactly where trading put them; the recorded revision is what tells holders
+  the number moved.
 - A paid contract's title carries its price by convention (`$200: ...`). Send both, agreeing, or the
   edit is refused with 400.
 

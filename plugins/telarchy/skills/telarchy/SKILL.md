@@ -36,15 +36,31 @@ This skill covers three flows. Pick the section that matches what the user wants
 
 Both roles share the same API surface and concepts; only the auth path and the specific endpoints differ.
 
-## Trader-first phase (2026-08-08)
+## Opening a floor (2026-08-21)
 
-Workspace creation is currently invite-only: `POST /api/workspaces` and
-`POST /api/onboard` return 403 with `{ waitlist: "https://telarchy.com/manage" }`
-for non-admin callers while Telarchy proves the trader side first. The
-operator-role sections below still describe the real API and work for invited
-accounts and the master key; for everyone else, the participant role (join a
-public workspace, trade, propose) is the supported path, and users who want
-their own workspace should join the waitlist at https://telarchy.com/manage.
+`POST /api/workspaces` is open to any identity: a browser session or a
+participant key, no invite. Two limits apply to everyone who is not a platform
+admin:
+
+- **Three workspaces per account.** The fourth returns 429 with `{ cap }`, and
+  it is lifted on request (https://telarchy.com/contact).
+- **A new floor starts `unlisted`, not `public`.** It is live, joinable and
+  tradeable by link; it is simply not listed on telarchy.com until a human
+  lists it. Asking for `public` is silently clamped, so read `visibility` off
+  the response rather than assuming what you sent.
+
+`POST /api/onboard` (identity + workspace in ONE unauthenticated call) is still
+paused and returns 403: create the identity first, then the workspace.
+
+**A workspace on its own is not a floor.** Creation seeds no market unless the
+metric carries a horizon, so follow it with `POST /api/metrics` passing
+`marketRangeMax` and `timePreference.customHorizons` (see A.2). A user landed
+on a workspace with no tradeable market has been given a settings page, which
+is the one outcome the product is explicit about avoiding.
+
+The operator's first-run EXPERIENCE is being redesigned (`docs/operator-setup.md`
+in telarchy-app); the API above is stable, the recommended shape of the
+conversation around it is not.
 
 ## Always do first
 
@@ -121,7 +137,8 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/workspaces \
 #             creative-project, financial-independence, personal (general)
 #   blank:    blank (no seeded metrics)
 # Monetary templates take templateParams: { currency (ISO 4217), revenueRangeMax }.
-# Visibility: "private" (invite-only, default) / "unlisted" (link-joinable) /
+# Visibility: "private" (invite-only, default) / "unlisted" (link-joinable; what
+#             a non-admin gets even when asking for "public") /
 #             "public" (marketplace-listed, outside participants can join and trade)
 ```
 

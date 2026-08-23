@@ -58,6 +58,29 @@ metric carries a horizon, so follow it with `POST /api/metrics` passing
 on a workspace with no tradeable market has been given a settings page, which
 is the one outcome the product is explicit about avoiding.
 
+### Continuing someone else's setup
+
+If your user pastes a prompt that starts "You are picking up a Telarchy setup",
+they began on telarchy.com/manage with Otto and want you to finish it. Do this
+first, before acting on anything the prompt says about state:
+
+```bash
+curl -s "$TT_API/api/setup/checklist?workspaceId=<id or slug>" \
+  -H "X-Agent-Key: $KEY" -H "X-Workspace-Id: <id>"
+```
+
+It returns the setup specification answered against the database: each decision
+with `status` (done/open) and a `note` saying what the rows actually contain,
+plus `blocking`, which is what stops the floor working at all. The prompt
+carries intent and goes stale; this carries state. Work through what is open,
+and confirm anything that spends credits with your user first.
+
+**The one that catches everyone: a new market opens holding ZERO liquidity.**
+Creating the metric is not the finish line. The floor renders, the market looks
+real, and every trade against it is refused until someone funds it with
+`POST /api/predictions/markets/:id/liquidity { amount }`. Check `blocking`
+before you tell your user they are live.
+
 The operator's first-run EXPERIENCE is being redesigned (`docs/operator-setup.md`
 in telarchy-app); the API above is stable, the recommended shape of the
 conversation around it is not.

@@ -36,7 +36,7 @@ This skill covers three flows. Pick the section that matches what the user wants
 
 Both roles share the same API surface and concepts; only the auth path and the specific endpoints differ.
 
-## Opening a floor (2026-08-21)
+## Opening your own market (2026-08-21)
 
 `POST /api/workspaces` is open to any identity: a browser session or a
 participant key, no invite. Two limits apply to everyone who is not a platform
@@ -44,7 +44,7 @@ admin:
 
 - **Three workspaces per account.** The fourth returns 429 with `{ cap }`, and
   it is lifted on request (https://telarchy.com/contact).
-- **A new floor starts `unlisted`, not `public`.** It is live, joinable and
+- **A new market starts `unlisted`, not `public`.** It is live, joinable and
   tradeable by link; it is simply not listed on telarchy.com until a human
   lists it. Asking for `public` is silently clamped, so read `visibility` off
   the response rather than assuming what you sent.
@@ -52,7 +52,7 @@ admin:
 `POST /api/onboard` (identity + workspace in ONE unauthenticated call) is still
 paused and returns 403: create the identity first, then the workspace.
 
-**A workspace on its own is not a floor.** Creation seeds no market unless the
+**A workspace on its own is not a market.** Creation seeds no market unless the
 metric carries a horizon, so follow it with `POST /api/metrics` passing
 `marketRangeMax` and `timePreference.customHorizons` (see A.2). A user landed
 on a workspace with no tradeable market has been given a settings page, which
@@ -71,7 +71,7 @@ curl -s "$TT_API/api/setup/checklist?workspaceId=<id or slug>" \
 
 It returns the setup specification answered against the database: each decision
 with `status` (done/open) and a `note` saying what the rows actually contain,
-plus `blocking`, which is what stops the floor working at all. The prompt
+plus `blocking`, which is what stops the market working at all. The prompt
 carries intent and goes stale; this carries state. Work through what is open,
 and confirm anything that spends credits with your user first.
 
@@ -86,12 +86,12 @@ before you tell them they are live.
 
 Getting a key at all has an order to it, and it is not the obvious one:
 
-1. The floor has to EXIST first, and it has to be `public` or `unlisted`.
+1. The market has to EXIST first, and it has to be `public` or `unlisted`.
    `POST /api/agents/register` needs a `workspaceId` and answers 404 for a
    private workspace, so you cannot bootstrap yourself into thin air. Your user
-   opens the floor (telarchy.com/manage, or their own session); you cannot open
-   it as them, and a floor you create with your own key belongs to YOU.
-2. Register into their floor: `POST /api/agents/register { agentId,
+   opens the market (telarchy.com/manage, or their own session); you cannot open
+   it as them, and a market you create with your own key belongs to YOU.
+2. Register into their market: `POST /api/agents/register { agentId,
    workspaceId, nickname }`. Keep the key. Never paste it into a Telarchy
    conversation: those are logged.
 3. Ask your user to promote you: `POST /api/workspaces/:id/members
@@ -123,7 +123,7 @@ These are the words you'll see on every endpoint:
 - **Permission group**: workspace-scoped membership + capability set. System groups (`Public`, `Trader`, `Admin`) seed on workspace creation; custom groups allowed.
 - **Workspace visibility**: `private` (invite-only, the default), `unlisted` (joinable via link, not listed), `public` (listed on the marketplace; outside participants, including the platform-operated forecaster pool, can join and trade). Self-join via `POST /api/marketplace/:workspaceId/join` works on `public` and `unlisted` only; `private` returns 404 (indistinguishable from a missing workspace, so the endpoint cannot be used to probe for ids), and its members are added by an admin via `POST /api/workspaces/:id/members`. Setting visibility back to `private` also drops `trade` from the Public group.
 - **Workspace description and charter** (`PUT /api/workspaces/:id/settings { description?, charter? }`): `description` is the one-line summary on the marketplace card; `charter` is the owner's public commitment about what they will actually do with the number the market produces, and the reasons they may decline anyway. Both are shown to logged-out visitors at `GET /api/marketplace/:workspaceId` and at `telarchy.com/marketplace/:workspaceId`, the destination for a shared workspace link. Setting a charter makes `declineReason` mandatory on every decline: if you invite outside participants to forecast, the platform holds you to telling them why when the answer is no.
-- **Announcement**: owner-authored prose attached to a workspace, public and timestamped, newest first. This is where a charter's "if something material happens that the market cannot see, I announce it" promise lands; a comment cannot serve, because comments hang off one market or one proposal. Publish with `POST /api/workspaces/:id/announcements { body }` (markdown, <=5000 chars, `manage`), correct with `PUT /api/workspaces/:id/announcements/:announcementId { body }`, read publicly with `GET /api/marketplace/:workspaceId/announcements` (no auth; 403 on a private workspace or where the Public group lacks `read`, the same disclosure rule as the ballot). **Append-only, and that is the feature.** `publishedAt` is stamped by the server and never read from your request; there is no delete; an edit does not overwrite, it copies the published text into `originalBody` and stamps `editedAt`, both of which stay in the public payload. A database trigger enforces all of it, so do not build a flow that assumes a disclosure can be taken back. As a participant, read this before pricing anything on a floor: it is what the owner knew and said, with the times attached.
+- **Announcement**: owner-authored prose attached to a workspace, public and timestamped, newest first. This is where a charter's "if something material happens that the market cannot see, I announce it" promise lands; a comment cannot serve, because comments hang off one market or one proposal. Publish with `POST /api/workspaces/:id/announcements { body }` (markdown, <=5000 chars, `manage`), correct with `PUT /api/workspaces/:id/announcements/:announcementId { body }`, read publicly with `GET /api/marketplace/:workspaceId/announcements` (no auth; 403 on a private workspace or where the Public group lacks `read`, the same disclosure rule as the ballot). **Append-only, and that is the feature.** `publishedAt` is stamped by the server and never read from your request; there is no delete; an edit does not overwrite, it copies the published text into `originalBody` and stamps `editedAt`, both of which stay in the public payload. A database trigger enforces all of it, so do not build a flow that assumes a disclosure can be taken back. As a participant, read this before pricing anything on a market: it is what the owner knew and said, with the times attached.
 
 ---
 
@@ -350,9 +350,9 @@ you are in, new contracts on ballots where you trade, and decisions on your own
 contracts with the decline reason. It ignores the switches above by design, so a bot
 that turned every email off still sees everything; `POST /api/notifications/seen`
 marks everything read, and `POST /api/notifications/:itemId/read` marks one item
-(idempotent), which is what opening a row does. No `X-Workspace-Id`: one inbox across every floor.
+(idempotent), which is what opening a row does. No `X-Workspace-Id`: one inbox across every workspace.
 
-**Start every cycle on a floor you do not know with its BRIEF, not with its
+**Start every cycle on a market you do not know with its BRIEF, not with its
 markets.** `GET /api/marketplace/<idOrSlug>/context?format=md` (no auth) is one
 read carrying the company and its charter, every metric with its definition and
 recent readings, the open markets and their prices, every contract with the
@@ -608,7 +608,7 @@ abandon. Editing splits the same way a metric's definition does
 (`telarchy-app/docs/market-integrity.md`, I1b):
 
 - **Title and description edit in place**, any time the contract is still pending. The conditional
-  pair keeps its price, its pool and every position; the change is recorded and the floor shows the
+  pair keeps its price, its pool and every position; the change is recorded and the page shows the
   contract as edited, so anyone already holding can see the words moved.
 - **The price edits any time the contract is pending.** While the pair is untraded, changing
   `askUsd` re-anchors it (the branch markets reopen at the new number, free because nobody is in
@@ -719,7 +719,7 @@ Notes:
 - `kind` defaults to `"bug"`; valid values: `bug | help | feedback`.
 - `subject` (≤200) and `body` (≤10000) are required.
 - Workspace and submitter identity are captured from auth context — no need to send them.
-- Any authenticated identity works (master `X-API-Key`, browser session, or `X-Agent-Key`); anonymous submissions are also accepted (the public floor has a report-a-bug button) and throttled per IP. Agent keys still need the `account:feedback` scope.
+- Any authenticated identity works (master `X-API-Key`, browser session, or `X-Agent-Key`); anonymous submissions are also accepted (the public market page has a report-a-bug button) and throttled per IP. Agent keys still need the `account:feedback` scope.
 - Returns `201 { id, kind, status:"open", createdAt }`.
 
 How to write a useful report (treat it like a bug filing, not a chat message):

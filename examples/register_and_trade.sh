@@ -10,7 +10,7 @@ AGENT_ID=${TELARCHY_AGENT_ID:-demo-bot-$(date +%s)}
 echo "==> 1. Register agent $AGENT_ID"
 REG=$(curl -s -X POST "$BASE/api/agents/register" \
   -H "Content-Type: application/json" \
-  -d "{\"agentId\":\"$AGENT_ID\",\"workspaceId\":\"$TELARCHY_WORKSPACE_ID\"}")
+  -d "{\"agentId\":\"$AGENT_ID\",\"workspaceId\":\"$TELARCHY_WORKSPACE_ID\",\"source\":\"github\"}")
 KEY=$(echo "$REG" | python3 -c "import sys,json;print(json.load(sys.stdin)['apiKey'])")
 echo "    apiKey: ${KEY:0:10}..."
 

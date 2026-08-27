@@ -195,6 +195,8 @@ curl -s -b /tmp/cookies.txt -X PUT https://telarchy.com/api/metrics/<metricId> \
 
 `oldValue` and `updateNote` are appended to the metric's reading log (`GET /api/metrics/:id/logs`, `GET /api/updates?limit=N`) so the team and every trader can see why a number moved. Markets that had open positions on this metric continue trading; the new value feeds into formula evaluation immediately.
 
+`value` may be `null`: an explicit N/A reading, meaning the number does not exist right now (a data pipeline is down, an event has not happened, the quantity is genuinely undefined this period). The N/A is logged as a reading, the metric (and every composite whose formula references it) reads N/A, and a market whose `resolvesOn` boundary lands on an N/A reading is VOIDED, every position refunded, with the reason published, instead of settling on a number. The next numeric update ends the state. Pass `oldValue: null` when the previous reading was N/A. Never push 0 to mean "no reading": 0 is a number and markets settle on it.
+
 **Sync cadence and settlement timing.** Markets settle on the metric value **as of `resolvesOn`**: the last reading at-or-before that instant, deterministically, no matter when the resolve cron runs (hourly at minute 0). An update landing after the boundary (even by one second) counts toward the NEXT fixing. So when building an automated sync:
 
 - Push **as frequently as is practical** (every few minutes beats hourly); traders price on the freshest number and the boundary fixing is never stale.

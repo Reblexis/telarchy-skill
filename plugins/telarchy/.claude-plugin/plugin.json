@@ -1,7 +1,7 @@
 {
   "name": "telarchy",
   "description": "Use the Telarchy API: open and run a workspace as an operator (KPIs, markets, proposals, settings), discover and read public workspaces without a key, and trade as a participant (register, trade, limit orders, liquidity, proposals, seasons, telemetry).",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "author": {
     "name": "Reblexis"
   },

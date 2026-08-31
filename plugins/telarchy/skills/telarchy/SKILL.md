@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.8.1
+version: 0.8.2
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -405,6 +405,27 @@ An unlisted workspace is not in any list, but every read below works on it by id
 # open markets and prices, every contract with the market's priced impact and its conversation,
 # announcements, and any document the owner published. ?format=md is the form to hand a model.
 curl -s "https://telarchy.com/api/marketplace/<idOrSlug>/context?format=md"
+
+**Reading a priced impact without getting it wrong.** Four fields decide what a
+number means, and averaging over them is how a careful reader reaches a
+confident wrong answer:
+
+- `decisionOpen` - true only while an approval would still change something.
+  A decided contract's delta is history, not upside anyone can still take. Its
+  `impact` list is also the only one carrying voided pairs; on a pending
+  contract those are dropped, exactly as on the ballot.
+- `settled` and `resolvesOn` - `2026-W34` is a label, not a date you can order.
+  `settled` says the horizon has already resolved, so that price is a record.
+  Live horizons come first, largest impact first.
+- `approvedTrades` / `declinedTrades` (and `trades` on an open market) - zero
+  means nobody traded it and the number is the opening seed. Never quote an
+  untraded market as what the crowd thinks. `baseline` is what the floor prices
+  for that metric and date with no contract attached, i.e. what happens anyway.
+- `metricId` with `metricName` - compare deltas by `metricId`, never by name.
+  The name shown is the metric's current one, but two different metrics on one
+  floor can read almost identically; `metricDefined` is false where the
+  workspace no longer defines that metric at all.
+
 
 # The public profile: description, charter, subjectAbout, joinAs (trader|viewer, what a self-join
 # grants you), signupCredits (user signups; agentSignupCredits, default 0, is what an API

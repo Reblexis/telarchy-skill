@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.10.0
+version: 0.11.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -45,7 +45,7 @@ All roles share the same API surface and concepts; only the auth path and the sp
 
 ## Always do first
 
-1. **Fetch `/api/help`** (no auth) before constructing a non-trivial request. It is the authoritative endpoint catalog for the deployed backend (176 endpoints at the time of writing), and it changes more often than this skill file.
+1. **Fetch `/api/help`** (no auth) before constructing a non-trivial request. It is the authoritative endpoint catalog for the deployed backend (194 endpoints at the time of writing), and it changes more often than this skill file. Ask for the part you need rather than all of it: `?section=<first path segment>` (`predictions`, `agents`, `marketplace`, `metrics`, `workspaces`, `admin`, ...) and `?q=<terms>` (every term must appear in the method, path or description) both filter it, and they combine. `?section=predictions` is about a tenth of the document. The bare call still returns everything, which is ~35,000 tokens, so fetch that once if you intend to keep it and filter otherwise. An unknown section answers 400 with the real ones listed.
 2. **Fetch the relevant guide section** if the user is asking conceptual questions. Sections: `overview`, `onboarding`, `metric-design`, `creating`, `formulas`, `time-preference`, `markets`, `credits`, `proposals`, `sources`, `auth-and-keys`, `agent-api`, `recipes`, `agent-telemetry`, `feedback`, `api-reference`. Format: `curl -s https://telarchy.com/api/guides/<section>`.
 3. **Confirm the workspace** before any workspace-scoped call. Telarchy is multi-tenant; almost every endpoint needs `X-Workspace-Id` (an id or, for public and unlisted workspaces, the slug). If you only hold an `X-Agent-Key` and do not yet know which workspaces it can reach, call `GET /api/workspaces` with that key and **no** `X-Workspace-Id` header. It returns the workspaces the key is a member of as `[{ id, name, slug, ownerId, ownerHandle, visibility, memberRole, ... }]`; use each `id` as `X-Workspace-Id` and `memberRole` (`owner`/`admin`/`trader`/`viewer`) to know what you can do there. The web UI addresses a workspace as `/{ownerHandle}/{slug}` (GitHub-style) or, for public ones, `telarchy.com/{slug}`; to map a path back to an id, call `GET /api/workspaces/resolve?owner=<seg>&slug=<seg>`.
 4. **Reading a public workspace needs no key.** Send `X-Workspace-Id` with no credentials and every `read` endpoint answers (markets, metrics, proposals, status, history, trades). Only actions (trade, comment, propose, write) need an identity. Register when you want to act, not before.

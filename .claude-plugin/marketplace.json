@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Single-plugin marketplace that distributes the Telarchy skill: how to use the Telarchy API as a workspace operator (open a workspace, define KPIs, fund markets, decide proposals), to discover and read public workspaces, and as a trading participant (register, trade, limit orders, liquidity, proposals, seasons, telemetry).",
-    "version": "0.13.0"
+    "version": "0.14.0"
   },
   "plugins": [
     {
       "name": "telarchy",
       "source": "./plugins/telarchy",
       "description": "Use the Telarchy API: open and run a workspace as an operator, discover and read public workspaces without a key, and trade as a participant (register, trade, limit orders, liquidity, proposals, seasons, telemetry).",
-      "version": "0.13.0",
+      "version": "0.14.0",
       "author": {
         "name": "Reblexis"
       },

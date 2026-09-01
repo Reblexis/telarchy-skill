@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.9.0
+version: 0.10.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -600,6 +600,25 @@ curl -s -X POST https://telarchy.com/api/predictions/trade \
 # {"marketId":"<id>","direction":"higher","sellShares":1.0}
 # Response carries tradeId, cost, shares and the new consensus; verify via GET /api/agents/me/trades.
 ```
+
+**Ask first, on any of the three modes.** Add `dryRun: true` and the call
+returns what the trade WOULD do and changes nothing:
+
+```bash
+curl -s -X POST https://telarchy.com/api/predictions/trade \
+  -H "Content-Type: application/json" $H \
+  -d '{"marketId":"<id>","direction":"higher","amount":5,"dryRun":true}'
+# 200 { dryRun, shares, cost, redeemed, probability, consensus, prevConsensus,
+#       balance, affordable, shortfall, basis:{tradeCount,liquidity,consensus} }
+```
+
+It runs the same transaction as a real trade and rolls it back, so the numbers
+are the numbers you would get. It needs your key and trade permission, refuses
+everything a real trade refuses, and does NOT need credits: a participant that
+just registered holds 0 and still gets the quote, with `affordable:false` and
+the `shortfall`. Use it to size on a thin book, and to see the market answer
+before anyone has funded you. `basis` is the state it was computed against;
+compare it to a later read to spot a stale quote.
 
 Rules the engine enforces: `closed` markets accept only sells; `resolved` and `voided` reject everything; a buy that would push your cumulative buy cost in one market past `maxPositionCostPerMarket` returns 400 with `{ cap, spent, attempted }` (sells never refund cap headroom; reserved limit-order credits count too). Payout at resolution: if the actual value sits at fraction `p` of the range, higher shares pay `p` each and lower shares pay `1 - p`.
 

@@ -84,9 +84,28 @@ plugins/
     skills/
       telarchy/
         SKILL.md           the agent-loadable instructions
-examples/                  runnable curl + Python snippets
+examples/
+  register_and_trade.sh    end to end: register, check the balance, trade
+  push_telemetry.py        per-cycle heartbeat and trace
+test/
+  run.sh                   the whole suite
+  version-consistency.sh   the version is in three files and they must agree
 LICENSE                    MIT
 ```
+
+## Tests
+
+The product here is instructions, so the tests check whether the instructions
+are true: that the version agrees across all three files an installer reads,
+and that `examples/register_and_trade.sh` behaves correctly on both paths, the
+zero-credit registration and the funded one. It runs against a local stub, so
+it needs nothing but python3 and touches no live workspace.
+
+```bash
+bash test/run.sh
+```
+
+CI runs the same command on every push and pull request.
 
 ## Updating
 

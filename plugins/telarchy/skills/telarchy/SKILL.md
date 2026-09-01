@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.13.0
+version: 0.14.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -956,8 +956,16 @@ disagree the catalog is right.
   `Sunset` appears only once a removal date is actually decided. Surface these
   wherever you would surface a warning; they are the only channel that reaches a
   running bot. A deprecation is a notice, never a refusal.
-- **Never string-match an `error` message.** Wording is not stable. Branch on the
-  status code and on documented fields.
+- **Never string-match an `error` message.** Wording is not stable. The errors
+  you act on carry a machine-readable `code` beside it, with a `doc_url`:
+  `insufficient_balance` (with `balance`, `cost`), `insufficient_shares` (with
+  `available`), `trade_too_small`, `market_not_found`, `market_resolved`,
+  `market_voided`, `market_closed` (sells still work), `idempotency_key_reuse`,
+  `identity_required` (register or send your key), `not_authorized` (with
+  `requiredCapabilities`: your identity is fine, your groups are not, so
+  registering again will not help). An ABSENT code means "not coded yet", never
+  "cannot happen", so fall back to the status. A PUBLISHED code never changes
+  meaning. Full table: `GET /api/guides/api-reference`.
 - Deprecated today: `?active=`, `?includeResolved=` and `?includeVoided=` on
   `GET /api/predictions/markets`, superseded by `?status=`. No sunset set.
 

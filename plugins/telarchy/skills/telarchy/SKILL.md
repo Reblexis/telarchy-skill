@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.15.1
+version: 0.15.2
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -180,6 +180,7 @@ Notes:
 - `resolvesNaUntilMeasured` (default false): for a number that does not exist until an event happens (the valuation implied by an investment). While the metric has no logged reading at or before a market's resolution instant, that market voids as N/A (every position refunded) instead of settling on the default value. The first reading ends the state for good.
 - `timePreference.halfLife` is in years. With `enabled: true`, the system auto-creates markets at decay-weighted future time points (count set by `density`, default 3). When `timePreference` is omitted at creation it defaults to `{ enabled: true, halfLife: 1 }`, so set it deliberately. See `GET /api/guides/time-preference`.
 - `timePreference.customHorizons` (optional, max 24 entries) adds explicit market dates beyond the curve: rolling offsets (`"+1h"`, `"+3m"`, `"+2w"`; re-resolved against now on every hourly refresh so there is always a market that far out) or one-shot absolute dates (`"2026-12-31"`, `"2026-12"`, `"2026-W50"`, `"2026"`, `"2026-12-31T14"` for the 14:00-15:00 UTC hour). Custom horizons work even with `enabled: false` (pure manual horizons, no exponential curve). An intraday ladder is `["+1h", "+2h", ..., "+24h"]`. Removing an entry deactivates its market (sell-only); positions are kept and resolve normally.
+- `timePreference.horizonCredits` (optional) says, per entry, what a market on that date opens with, paid by the workspace owner as it opens and again every time a rolling entry comes round: `{"+1w": {"book": 500, "proposal": 250}}`. `book` is the metric's own market (absent or `null` falls back to `liquidityCredits` on the metric, then the workspace default); `proposal` is what a proposal's branch on that date opens with when the proposer has not funded it, **default 0**, meaning the proposer funds their own. Keys that name no `customHorizons` entry are dropped on save.
 
 **Editing a metric later** (`PUT /api/metrics/:id`): `name` and `description` change any time and never void a market; every change is written to an append-only revision log shown on the public floor. `formula` and `marketRangeMax` are what an open market settles on, so changing either is **refused with 409 while any market on the metric is open**: wait for it to resolve, or void it deliberately first (A.4). Changing `timePreference` reconciles markets (stale dates deactivate, new dates are created); `timePreference: null` clears it. `DELETE /api/metrics/:id` is refused with 409 while any open market on it has been traded.
 
@@ -223,7 +224,7 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/predictions/markets
 
 `targetDate` accepts year (`2026`), month (`2026-12`), ISO week (`2026-W52`), day (`2026-12-31`), UTC hour (`2026-12-31T14`), or relative (`+10d`, `+2w`, `+3m`, `+1y`). Every market resolves at the **end** of that period; the response carries `resolvesOn`, the exact ISO instant. Read `resolvesOn` for timing and never re-interpret `targetDate` yourself.
 
-**Fund it.** `liquidity` is POOL CREDITS, not the LMSR b (the book opens with `b = pool / ln 2`), and the pool is also the most the house can lose. Auto-created markets get `newMarketLiquidityCredits` from the owner when `autoFundNewMarkets` is on (default 0.5, see A.7), which is too thin to hold a price. Deepen any open market from your own balance, or every baseline market at once:
+**Fund it.** `liquidity` is POOL CREDITS, not the LMSR b (the book opens with `b = pool / ln 2`), and the pool is also the most the house can lose. Auto-created baseline markets get their date's `horizonCredits[entry].book`, else the metric's `liquidityCredits`, else `newMarketLiquidityCredits` from the owner when `autoFundNewMarkets` is on (default 0.5, see A.7), which is too thin to hold a price. A proposal's branch markets get their date's `horizonCredits[entry].proposal` (default 0: the proposer funds their own) and never the workspace auto-fund. Deepen any open market from your own balance, or every baseline market at once:
 
 ```bash
 # One market (anyone with trade; a refundable LP position, returned pro rata at resolution/void)
@@ -745,8 +746,9 @@ curl -s -X POST https://telarchy.com/api/proposals \
 # Returns { id, ... }. The proposalId. 429 with { pending, cap } past the workspace's pending cap.
 ```
 
-**Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. Omitting it
-ships markets with zero liquidity that carry no signal, and the failure is silent. The pair opens **anchored at the
+**Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. A proposal is
+the proposer's to fund: omitting it ships markets with zero liquidity unless the owner named a `proposal` number on
+that date (`timePreference.horizonCredits`, A.2), and the floor then says "no price yet" in place of the bet buttons. The pair opens **anchored at the
 baseline market's current consensus** (the approved branch additionally minus `askUsd`, since approval burns the ask
 into the resolving metric), so a fresh proposal reads as "no impact" until someone prices it.
 

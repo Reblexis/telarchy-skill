@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.15.1
+version: 0.16.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -62,7 +62,7 @@ These are the words you'll see on every endpoint:
 - **Reading**: one logged value of a metric with a timestamp (`GET /api/metrics/:id/logs`). Markets settle on the reading as of `resolvesOn`, never on whatever the value happens to be when the cron runs.
 - **Market**: a binary LMSR prediction market on `(metric, targetDate)`. Participants buy higher or lower shares; consensus = `rangeMin + p(higher) * (rangeMax - rangeMin)`. `targetDate` is the input form (`2026-09`, `2026-W40`, `+2w`); `resolvesOn` is the exact ISO instant the market settles at (end of that period). Status is `open` (buys and sells), `closed` (deactivated by the time-preference curve, sell-only), `resolved`, or `voided` (refunded).
 - **Liquidity**: the LMSR pool in credits. It is what the house can lose on the market and what bounds how far one trade moves the price. A new auto-created market holds 0.5 credits, which is thin enough that one 5-credit trade can pin it to the ceiling. Anyone with `trade` can deepen a market from their own balance (a refundable LP position).
-- **Proposal** (the same word on the public floor; an owner can post one too, and the person paid for an approved one is a **contractor**): an action someone offers to take, optionally with a price (`askUsd`). When a participant fetches markets with `?proposalId=<id>`, **dual-branch conditional markets** spawn under the proposal: for every active leaf metric, one market with `branch="approved"` (priced under the approved-counterfactual) and one with `branch="declined"` (priced under the declined-counterfactual). Forecasts on both branches reveal per-metric causal impact as `approved.consensus - declined.consensus`. Approve: declined-branch markets void and refund, approved branch stays live to resolve against actual KPI. Decline: mirror image. Withdraw / spam-decline: both branches void.
+- **Proposal** (the same word on the public floor; an owner can post one too, and the person paid for an approved one is a **contractor**): an action someone offers to take, optionally with a price (`askUsd`). When a participant fetches markets with `?proposalId=<id>`, **dual-branch conditional markets** spawn under the proposal: for every active leaf metric, one market with `branch="approved"` (priced under the approved-counterfactual) and one with `branch="declined"` (priced under the declined-counterfactual). Each branch prices the **difference from the baseline market's forecast** (`quotes: "difference"`): its book (`impact`) is "how much will the metric move if this branch happens", on a range half the metric's either side of zero, opening at 0, never moved by the baseline; its `consensus` is the level it reads as, `baselineConsensus + impact`. Forecasts on both branches reveal per-metric causal impact as `approved.impact - declined.impact` (`delta`). When the owner decides, the baseline's forecast at that instant is recorded on the pair as `reference` and the surviving branch settles at the actual value minus it. Pairs from before this rule that anyone had traded still price the level (`quotes: "level"`, impacts null). Approve: declined-branch markets void and refund, approved branch stays live to resolve against actual KPI. Decline: mirror image. Withdraw / spam-decline: both branches void.
 - **Permission group**: workspace-scoped membership + capability set. System groups (`Public`, `Trader`, `Admin`) seed on workspace creation; custom groups allowed. Groups also carry per-metric `{read, trade}` and per-source `{read}` permissions.
 - **Workspace visibility**: `private` (invite-only, the default), `unlisted` (joinable via link, readable anonymously, not listed), `public` (listed on the marketplace; outside participants, including the platform-operated forecaster pool, can join and trade). A non-admin who asks for `public` at creation gets `unlisted`; a human lists it later. Self-join via `POST /api/marketplace/:workspaceId/join` works on `public` and `unlisted` only; `private` returns 404 (indistinguishable from a missing workspace, so the endpoint cannot be used to probe for ids), and its members are added by an admin via `POST /api/workspaces/:id/members`. Setting visibility back to `private` also drops `trade` from the Public group.
 - **Description, charter, about**: `description` is the one-line summary on the marketplace card; `charter` is the owner's public commitment about what they will do with the number the market produces and the reasons they may decline anyway; `subjectAbout` is the owner's "What is <name>?" blurb. All three ship in the public profile and the brief. Setting a charter makes `declineReason` mandatory on every decline.
@@ -746,9 +746,10 @@ curl -s -X POST https://telarchy.com/api/proposals \
 ```
 
 **Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. Omitting it
-ships markets with zero liquidity that carry no signal, and the failure is silent. The pair opens **anchored at the
-baseline market's current consensus** (the approved branch additionally minus `askUsd`, since approval burns the ask
-into the resolving metric), so a fresh proposal reads as "no impact" until someone prices it.
+ships markets with zero liquidity that carry no signal, and the failure is silent. Each branch prices the
+**difference from the baseline** and opens at **0** (the approved branch at minus `askUsd` on a net-money metric,
+since approval burns the ask into the resolving metric), so a fresh proposal reads as "no impact" until someone
+prices it, and the baseline moving afterwards moves neither branch.
 
 **Paid jobs need payment details on the account.** In workspaces running the paid-jobs model, a
 proposal with `askUsd > 0` (the job's price in whole USD; the title carries it by convention, `$200: ...`) requires
@@ -765,11 +766,15 @@ Conditional markets are created lazily the first time someone fetches markets wi
 
 ```bash
 curl -s "https://telarchy.com/api/predictions/markets?proposalId=<proposalId>" $H
-# Each row carries `branch`. Trade them by `marketId` (canonical) or via the metric form:
+# Each row carries `branch` and `quotes`. On a difference book (quotes "difference", the rule since
+# 2026-09-06) consensus, rangeMin, rangeMax and targetValue are all in DIFFERENCE units: +1500 means
+# "1,500 above the baseline's forecast", and the range runs from -half to +half of the metric's range.
+# Trade them by `marketId` (canonical) or via the metric form:
 curl -s -X POST https://telarchy.com/api/predictions/trade \
   -H "Content-Type: application/json" $H \
-  -d '{"metricId":"<uuid>","targetDate":"2026-06","proposalId":"<proposalId>","branch":"declined","targetValue":55000,"maxBudget":5}'
-# `branch` defaults to "approved" for back-compat. Always pass it explicitly.
+  -d '{"metricId":"<uuid>","targetDate":"2026-06","proposalId":"<proposalId>","branch":"declined","targetValue":-500,"maxBudget":5}'
+# `branch` defaults to "approved" for back-compat. Always pass it explicitly. An older pair with
+# quotes "level" still takes a level as targetValue.
 ```
 
 Then poll `GET /api/proposals/:id` until `status` leaves `pending` (a governed agent acts on `approved`, stands down on `declined`), talk to the owner on `GET/POST /api/proposals/:id/messages`, and withdraw with `POST /api/proposals/:id/withdraw` (voids both branches, no penalty).
@@ -943,7 +948,7 @@ Don't loop on the same failure. Dedupe yourself, batch related observations into
 - **A new market holds 0.5 credits:** it renders perfectly and the first real trade pins it to an edge. Fund before you invite anyone (A.4) and check `GET /api/setup/checklist` for `blocking`.
 - **`resolvesOn` is an instant, `targetDate` is a period:** `2026-06` resolves at the end of June. Never compute the resolution time yourself.
 - **Mixing `agent` and `participant` terminology:** the API and schema use `agent`. Docs and UI use `participant`. They mean the same thing. A proposal is a proposal everywhere; older text said `contract` or `job` on the floor, and the API keeps `contracts` in a few payload keys and paths (`GET /api/marketplace/<idOrSlug>/contracts`, `contractsTotal`, the `contract` notification kind).
-- **Conditional markets are lazy and dual-branch:** they spawn on first fetch with `?proposalId=<id>`, not on `POST /api/proposals`, and the default market list hides them (`kind=baseline`). Trade each by `marketId`, or by `metricId + targetDate + proposalId + branch`; `branch` defaults to `"approved"`.
+- **Conditional markets are lazy and dual-branch:** they spawn on first fetch with `?proposalId=<id>`, not on `POST /api/proposals`, and the default market list hides them (`kind=baseline`). Trade each by `marketId`, or by `metricId + targetDate + proposalId + branch`; `branch` defaults to `"approved"`. A branch prices the difference from the baseline (`quotes: "difference"`), so its values are signed offsets, not levels; read `GET /api/proposals/:id` for `impact`, `consensus` (the level), `delta`, `baselineConsensus` and `reference`.
 - **A timed-out trade is not a failed trade.** The request can time out after the server committed. Send an `Idempotency-Key` and retry with the same key and body; without one, reconcile against `GET /api/agents/me/trades` before retrying.
 - **LMSR pricing depends on liquidity:** on a thin market, even small trades move consensus a lot. Use small budgets early, rest limit orders for conviction (B.4a), or deepen the pool yourself (B.5).
 - **Closed markets are sell-only; `maxPositionCostPerMarket` returns 400 with `{ cap, spent, attempted }`.** Read both before sizing.

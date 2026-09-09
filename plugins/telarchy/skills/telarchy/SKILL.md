@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.17.0
+version: 0.17.1
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -436,6 +436,15 @@ An unlisted workspace is not in any list, but every read below works on it by id
 # open markets and prices, every proposal with the market's priced impact and its conversation,
 # announcements, and any document the owner published. ?format=md is the form to hand a model.
 curl -s "https://telarchy.com/api/marketplace/<idOrSlug>/context?format=md"
+
+**What the brief carries besides prices.** Every approved proposal has
+`delivery` (`state` not_started | in_progress | delivered, the owner's `note`,
+and `at` the day it was delivered): the priced impact above it is a forecast
+of a world you otherwise cannot confirm arrived. `ownerCalls` is what the
+OWNER expects per metric and date, beside what the market says, with
+`revisions` behind it; it moves no price and settles nothing. `events` is the
+dated things the owner did over the window the readings cover, so a jump in
+the history is explicable rather than taken on faith.
 
 **What the brief carries about history.** Each metric's `history` is ONE POINT
 PER DAY - the reading that stood at the end of that day - over the whole

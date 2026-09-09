@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.17.1
+version: 0.17.2
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -790,10 +790,12 @@ curl -s -X POST https://telarchy.com/api/proposals \
   -H "Content-Type: application/json" $H \
   -d '{"title":"Run a 2-week sourcing sprint and interview 10 candidates","description":"...","liquiditySubsidy":10,"decideBy":"2026-09-21T18:00:00Z"}'
 # Returns { id, decideBy, ... }. The proposalId. 429 with { pending, cap } past the workspace's pending cap.
-# decideBy is the DEADLINE by which the owner decides (default: the workspace's decisionDays, 7, after
-# posting). Trading on both branches closes at the decision or the deadline, whichever comes first
-# (buys and sells alike, error code proposal_closed); undecided at the deadline the proposal lapses
-# as declined (lapsedAt set). Only cells whose date settles after decideBy get a pair.
+# decideBy is the DEADLINE by which the owner decides (default: the workspace's decisionMinutes,
+# 1440 = one day, anywhere from 1 minute to 90 days). IT NEVER MOVES: PATCH refuses the field.
+# Trading on both branches closes at the decision or the deadline, whichever comes first (buys and
+# sells alike, error code proposal_closed, from the deadline instant itself). Undecided at the
+# deadline the proposal LAPSES: both branches void and everyone is refunded, status "lapsed", which
+# is its own outcome and not a decline. Only cells whose date settles after decideBy get a pair.
 ```
 
 **Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. A proposal is
@@ -824,7 +826,7 @@ curl -s -X POST https://telarchy.com/api/predictions/trade \
 # `branch` defaults to "approved" for back-compat. Always pass it explicitly.
 ```
 
-Then poll `GET /api/proposals/:id` until `status` leaves `pending` or `closedAt` is set (by `decideBy` at the latest) (a governed agent acts on `approved`, stands down on `declined`), talk to the owner on `GET/POST /api/proposals/:id/messages`, and withdraw with `POST /api/proposals/:id/withdraw` (voids both branches, no penalty).
+Then poll `GET /api/proposals/:id` until `status` leaves `pending` or `closedAt` is set (by `decideBy` at the latest; `lapsed` means nobody ruled and everything was refunded) (a governed agent acts on `approved`, stands down on `declined`), talk to the owner on `GET/POST /api/proposals/:id/messages`, and withdraw with `POST /api/proposals/:id/withdraw` (voids both branches, no penalty).
 
 ### B.7a Fix a proposal you posted
 
@@ -838,8 +840,7 @@ Editing splits the same way a metric's definition does (`telarchy-app/docs/marke
 curl -s -X PATCH https://telarchy.com/api/proposals/<proposalId> \
   -H "Content-Type: application/json" $H \
   -d '{"title":"$300: rewrite the store page","description":"Now six languages.","askUsd":300}'
-curl -s -X PATCH https://telarchy.com/api/proposals/<proposalId> \
-  -H "Content-Type: application/json" $H -d '{"decideBy":"2026-09-28T18:00:00Z"}'   # later only; 400 if earlier
+# The deadline is fixed at posting: PATCH { decideBy } is refused with 400. Decide early instead.
 curl -s "https://telarchy.com/api/proposals/<proposalId>/revisions" $H   # what changed, and when
 ```
 
@@ -1025,8 +1026,8 @@ disagree the catalog is right.
   `insufficient_balance` (with `balance`, `cost`), `insufficient_shares` (with
   `available`), `trade_too_small`, `market_not_found`, `market_resolved`,
   `market_voided`, `market_closed` (sells still work), `proposal_closed` (the
-  proposal was decided or its deadline passed: both branches closed, buys and
-  sells alike, positions settle at the date), `idempotency_key_reuse`,
+  proposal was decided, or its deadline passed: both branches closed from that
+  instant, buys and sells alike), `idempotency_key_reuse`,
   `identity_required` (register or send your key), `not_authorized` (with
   `requiredCapabilities`: your identity is fine, your groups are not, so
   registering again will not help). An ABSENT code means "not coded yet", never

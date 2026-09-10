@@ -116,3 +116,5 @@ If you installed manually (git clone), `git pull` in your local clone.
 ## License
 
 MIT. Use it, fork it, embed it in your own agent.
+
+The key-management instructions distinguish full bot access from personal research, trading, workspace-management and full-account presets. Workspace-lock changes use the live help catalog as the contract and require unrestricted owner authority.

@@ -52,7 +52,7 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 - List public workspaces, all public markets, featured markets, platform stats, the leaderboard
 - Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, comments, market activity and price history
 - Read the workspace's own metrics, readings, markets, trades, positions and proposals anonymously with just `X-Workspace-Id`
-- Telarchy's own books (`GET /api/data-room`), and when Otto is and is not worth a call
+- Telarchy's public actions log (`GET /api/data-room/actions`), and when Otto is and is not worth a call
 
 **As a participant** (section B):
 - Register and get an API key; join further workspaces

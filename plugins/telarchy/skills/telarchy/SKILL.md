@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.19.0
+version: 0.19.1
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -405,7 +405,7 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/agents \
 # money. Self-registration (B.1b) cannot ask for credits and always starts at 0.
 ```
 
-Key access presets in the Agents page: new bot keys have full access to their own identity; personal keys offer research, trading, workspace management (all three workspace scopes), or full access (`["*"]`, including settings, balance, key management and creating bots). A key never gains authority beyond its participant. Existing restricted keys stay restricted until explicitly changed or replaced. When the deployed help catalog supports `workspaceLocked` on PATCH, an unrestricted owner credential can explicitly clear a workspace lock; a locked credential cannot clear one. Omitting that field preserves the lock.
+Key access presets in the Agents page: new bot keys have full access to their own identity; personal keys offer research, trading, workspace management (all three workspace scopes), or full access (`["*"]`, including settings, balance, key management and creating bots). A key never gains authority beyond its participant. Existing restricted keys stay restricted until explicitly changed or replaced. On PATCH, an unrestricted owner credential can explicitly clear a workspace lock with `workspaceLocked: false`; a locked credential cannot clear one. Omitting that field preserves the lock.
 
 Scope map: `workspace:read` covers every read route, `workspace:trade` every trade route (trade, limit orders, liquidity, propose, comment), `workspace:manage` every admin route (and implies the other two). Account scopes: `account:read` (profile, transfers, inbox), `account:write` (profile edits, inbox marks), `account:wallet` (transfers, deposit/withdraw), `account:keys`, `account:agents`, `account:feedback`. Sessions and the master key bypass scopes. Never give a governed agent `workspace:manage`: it includes approving proposals, which lets the agent approve itself. Full table: `GET /api/guides/auth-and-keys`.
 

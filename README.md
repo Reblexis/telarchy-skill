@@ -45,14 +45,14 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 - Create, fund, void and resolve markets
 - Approve, decline, decline-as-spam, or remove proposals; read the negotiation thread
 - Manage members and permission groups (Public / Trader / Admin + custom, per-metric and per-source permissions)
-- Workspace settings (description, charter, about, position cap, proposal reward and spam penalty, auto-fund), announcements, plan items (what you committed to, drawn on the data room's "What is planned" time axis; done or edited, never deleted), sources, activity and event feeds
+- Workspace settings (description, charter, about, position cap, proposal reward and spam penalty, auto-fund), announcements, plan entries (what you are going to do and by when, in your own words; the data room's "What is planned" tab; done or edited, never deleted), sources, activity and event feeds
 - Keys and scopes; creating bots you own
 
 **Discovery** (section D), all without a key:
 - List public workspaces, all public markets, featured markets, platform stats, the leaderboard
-- Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, the timeline of what is planned (`GET /api/marketplace/<idOrSlug>/timeline` for any floor, `GET /api/data-room/planned` for the platform's own as the data room draws it), comments, market activity and price history
+- Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, comments, market activity and price history
 - Read the workspace's own metrics, readings, markets, trades, positions and proposals anonymously with just `X-Workspace-Id`
-- Telarchy's public actions log (`GET /api/data-room/actions`) and what is planned next (`GET /api/data-room/planned`), and when Otto is and is not worth a call
+- The data room's four tabs: the public actions log (`GET /api/data-room/actions`), what the owner has planned (`GET /api/data-room/planned`, entries the owner typed, open and done), the documentation (the guides) and the vision (`GET /api/data-room/vision`); and when Otto is and is not worth a call
 
 **As a participant** (section B):
 - Register and get an API key; join further workspaces

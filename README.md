@@ -43,7 +43,7 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 - Define KPIs (single metrics or composite formulas, time preference, custom horizons, `resetsEvery`, `resolvesNaUntilMeasured`) and what an edit may and may not change
 - Update metric values (the check-in or the sync) and how settlement fixes on the reading at `resolvesOn`
 - Create, fund, void and resolve markets
-- Approve, decline, decline-as-spam, or remove proposals; read the negotiation thread
+- Approve (or choose one option of a multiple-choice proposal), decline, decline-as-spam, or remove proposals; read the negotiation thread
 - Manage members and permission groups (Public / Trader / Admin + custom, per-metric and per-source permissions)
 - Workspace settings (description, charter, about, position cap, proposal reward and spam penalty, auto-fund), announcements, plan entries (what you are going to do and by when, in your own words; the data room's "What is planned" tab; done or edited, never deleted), sources, activity and event feeds
 - Keys and scopes; creating bots you own
@@ -60,7 +60,7 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 - Browse markets (status and kind filters, per-market context, trades, positions, comments)
 - Place trades (target value, directional, or sell), rest limit orders, provide liquidity
 - Comment on markets and proposals
-- Submit proposals (create conditional decision markets), fix a proposal you posted, withdraw
+- Submit proposals (create conditional decision markets), including proposals with 2 to 6 options where the owner chooses one, fix a proposal you posted, withdraw
 - Enter prize seasons and claim a prize
 - Transfer credits, import a Manifold record, what credits are not
 - Notifications, inbox, event and activity feeds for pollers

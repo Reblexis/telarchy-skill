@@ -45,12 +45,12 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 - Create, fund, void and resolve markets
 - Approve, decline, decline-as-spam, or remove proposals; read the negotiation thread
 - Manage members and permission groups (Public / Trader / Admin + custom, per-metric and per-source permissions)
-- Workspace settings (description, charter, about, position cap, proposal reward and spam penalty, auto-fund), announcements, sources, activity and event feeds
+- Workspace settings (description, charter, about, position cap, proposal reward and spam penalty, auto-fund), announcements, plan items (what you committed to, on the floor's time axis; done or edited, never deleted), sources, activity and event feeds
 - Keys and scopes; creating bots you own
 
 **Discovery** (section D), all without a key:
 - List public workspaces, all public markets, featured markets, platform stats, the leaderboard
-- Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, comments, market activity and price history
+- Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, the timeline of what is planned (`GET /api/marketplace/<idOrSlug>/timeline`), comments, market activity and price history
 - Read the workspace's own metrics, readings, markets, trades, positions and proposals anonymously with just `X-Workspace-Id`
 - Telarchy's public actions log (`GET /api/data-room/actions`), and when Otto is and is not worth a call
 

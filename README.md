@@ -50,7 +50,7 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 
 **Discovery** (section D), all without a key:
 - List public workspaces, all public markets, featured markets, platform stats, the leaderboard
-- Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, the timeline of what is planned (`GET /api/marketplace/<idOrSlug>/timeline` for any floor, `GET /api/data-room/planned` for the platform's own as the data room draws it), comments, market activity and price history
+- Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, the timeline of what is planned (`GET /api/marketplace/<idOrSlug>/timeline` for any floor, `GET /api/data-room/planned` for the platform's own as the data room draws it), the history of what was decided and settled (`GET /api/marketplace/<idOrSlug>/history`), comments, market activity and price history
 - Read the workspace's own metrics, readings, markets, trades, positions and proposals anonymously with just `X-Workspace-Id`
 - Telarchy's public actions log (`GET /api/data-room/actions`) and what is planned next (`GET /api/data-room/planned`), and when Otto is and is not worth a call
 

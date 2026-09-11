@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.18.0
+version: 0.19.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -239,6 +239,15 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/predictions/markets
 `GET /api/predictions/markets/:id/liquidity-events` lists who funded what. `GET /api/setup/checklist?workspaceId=<id>` reports an unfunded market under `blocking`.
 
 **Void** (`POST /api/predictions/markets/:id/void`): refunds every position at cost and returns the pool to LPs; refused with 409 once anyone has traded, unless the body carries `{ "acknowledgeTraded": true, "reason": "<10+ chars, published on the event>" }`. A voided market does not occupy its slot, so void-then-create is how you resize an untraded book. **Force-resolve** (`POST /api/predictions/markets/:id/resolve`) settles now against the current total; irreversible, it pays out rather than refunds.
+
+**Settle early** (`POST /api/metrics/:id/settle`, manage): the answer is known before the period ends (a game's attempt ended, a contract is signed for the quarter). Files the reading at `asOf` (default now) and settles EVERY open book on that metric at `value`, whatever its date, floor books and the continued branch of a decided proposal alike, with normal payouts. `reason` is required; it is published on each `market:resolved` event with `settledEarly: true`, and the book's summary carries `settledEarly: true`. Voided and settled books are untouched; a second call settles nothing more. Books opened afterwards are new questions.
+
+```bash
+curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/metrics/<metricId>/settle \
+  -H "Content-Type: application/json" -H "X-Workspace-Id: <workspaceId>" \
+  -d '{"value": 9, "reason": "Game 1, attempt 3 ended at length 9"}'
+# Returns { settled: [marketId...], count, totalPayout }
+```
 
 ### A.5 Approve or decline a proposal
 

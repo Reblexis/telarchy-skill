@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.20.0
+version: 0.21.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -179,7 +179,7 @@ Notes:
 - `resetsEvery` (`null` | `"hour"` | `"day"` | `"week"` | `"month"` | `"year"`): set it when the number RESTARTS each period ("revenue this week"). A reading then belongs to the period it was taken in, so the floor charts only readings inside a market's own period instead of drawing last week's total as this week's actual. Does not change settlement.
 - `resolvesNaUntilMeasured` (default false): for a number that does not exist until an event happens (the valuation implied by an investment). While the metric has no logged reading at or before a market's resolution instant, that market voids as N/A (every position refunded) instead of settling on the default value. The first reading ends the state for good.
 - `timePreference.halfLife` is in years. With `enabled: true`, the system auto-creates markets at decay-weighted future time points (count set by `density`, default 3). When `timePreference` is omitted at creation it defaults to `{ enabled: true, halfLife: 1 }`, so set it deliberately. See `GET /api/guides/time-preference`.
-- `timePreference.customHorizons` (optional, max 24 entries) adds explicit market dates beyond the curve: rolling offsets (`"+1h"`, `"+3m"`, `"+2w"`; re-resolved against now on every hourly refresh so there is always a market that far out) or one-shot absolute dates (`"2026-12-31"`, `"2026-12"`, `"2026-W50"`, `"2026"`, `"2026-12-31T14"` for the 14:00-15:00 UTC hour). Custom horizons work even with `enabled: false` (pure manual horizons, no exponential curve). An intraday ladder is `["+1h", "+2h", ..., "+24h"]`. Removing an entry deactivates its market (sell-only); positions are kept and resolve normally.
+- `timePreference.customHorizons` (optional, max 24 entries) adds explicit market dates beyond the curve: rolling offsets (`"+1h"`, `"+3m"`, `"+2w"`; re-resolved against now on every hourly refresh so there is always a market that far out) or one-shot absolute dates (`"2026-12-31"`, `"2026-12"`, `"2026-W50"`, `"2026"`, `"2026-12-31T14"` for the 14:00-15:00 UTC hour, `"2026-12-31T14:30"` for the single minute to 14:31). Custom horizons work even with `enabled: false` (pure manual horizons, no exponential curve). An intraday ladder is `["+1h", "+2h", ..., "+24h"]`. Minutes work too: `"+Nmin"` (1 to 1440) is a rolling minute horizon, which is what a floor deciding every minute prices on. A rolling entry only exists once the markets are refreshed, so a floor moving that fast forces it with `POST /api/predictions/markets/refresh {"force": true}` (a manager call, no cooldown) rather than waiting for the hourly cron. Removing an entry deactivates its market (sell-only); positions are kept and resolve normally.
 - `timePreference.horizonCredits` (optional) says, per entry, what a market on that date opens with, paid by the workspace owner as it opens and again every time a rolling entry comes round: `{"+1w": {"book": 500, "proposal": 250}}`. `book` is the metric's own market (absent or `null` falls back to `liquidityCredits` on the metric, then the workspace default); `proposal` is what a proposal's branch on that date opens with when the proposer has not funded it, **default 0**, meaning the proposer funds their own. Keys that name no `customHorizons` entry are dropped on save.
 
 **Editing a metric later** (`PUT /api/metrics/:id`): `name` and `description` change any time and never void a market; every change is written to an append-only revision log shown on the public floor. `formula` and `marketRangeMax` are what an open market settles on, so changing either is **refused with 409 while any market on the metric is open**: wait for it to resolve, or void it deliberately first (A.4). Changing `timePreference` reconciles markets (stale dates deactivate, new dates are created); `timePreference: null` clears it. `DELETE /api/metrics/:id` is refused with 409 while any open market on it has been traded.
@@ -196,7 +196,7 @@ curl -s -b /tmp/cookies.txt -X PUT https://telarchy.com/api/metrics/<metricId> \
 
 `oldValue` and `updateNote` are appended to the metric's reading log (`GET /api/metrics/:id/logs`, `GET /api/updates?limit=N`) so the team and every trader can see why a number moved. Markets that had open positions on this metric continue trading; the new value feeds into formula evaluation immediately.
 
-**Sync cadence and settlement timing.** Markets settle on the metric value **as of `resolvesOn`**: the last reading at-or-before that instant, deterministically, no matter when the resolve cron runs (hourly at minute 0). An update landing after the boundary (even by one second) counts toward the NEXT fixing. So when building an automated sync:
+**Sync cadence and settlement timing.** Markets settle on the metric value **as of `resolvesOn`**: the last reading at-or-before that instant, deterministically, no matter when the resolve cron runs (hourly at minute 0). One exception, and a trader must know it: an owner can settle a metric EARLY (`POST /api/metrics/:id/settle`), which pays every open book on that metric at once. A floor whose question ends before its clock does (the snake, where an attempt dies) uses it, so on such a floor `resolvesOn` is the latest you can be paid, not the moment you will be. An update landing after the boundary (even by one second) counts toward the NEXT fixing. So when building an automated sync:
 
 - Push **as frequently as is practical** (every few minutes beats hourly); traders price on the freshest number and the boundary fixing is never stale.
 - Make sure a push lands **shortly BEFORE each `resolvesOn` boundary** your markets settle on: for an hourly ladder, schedule a run at ~`:59:30` rather than at the top of the hour.
@@ -222,7 +222,7 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/predictions/markets
   -d '{"metricId":"<id>","targetDate":"2026-Q4","liquidity": 50}'
 ```
 
-`targetDate` accepts year (`2026`), month (`2026-12`), ISO week (`2026-W52`), day (`2026-12-31`), UTC hour (`2026-12-31T14`), or relative (`+10d`, `+2w`, `+3m`, `+1y`). Every market resolves at the **end** of that period; the response carries `resolvesOn`, the exact ISO instant. Read `resolvesOn` for timing and never re-interpret `targetDate` yourself.
+`targetDate` accepts year (`2026`), month (`2026-12`), ISO week (`2026-W52`), day (`2026-12-31`), UTC hour (`2026-12-31T14`), UTC minute (`2026-12-31T14:30`), or relative (`+10d`, `+2w`, `+3m`, `+1y`, `+5min`). Every market resolves at the **end** of that period; the response carries `resolvesOn`, the exact ISO instant. Read `resolvesOn` for timing and never re-interpret `targetDate` yourself.
 
 **Fund it.** `liquidity` is POOL CREDITS, not the LMSR b (the book opens with `b = pool / ln 2`), and the pool is also the most the house can lose. Auto-created baseline markets get their date's `horizonCredits[entry].book`, else the metric's `liquidityCredits`, else `newMarketLiquidityCredits` from the owner when `autoFundNewMarkets` is on (default 0.5, see A.7), which is too thin to hold a price. A proposal's branch markets get their date's `horizonCredits[entry].proposal` (default 0: the proposer funds their own) and never the workspace auto-fund. Deepen any open market from your own balance, or every baseline market at once:
 
@@ -349,15 +349,14 @@ curl -s -b /tmp/cookies.txt -X PUT https://telarchy.com/api/workspaces/<workspac
     "charter": "I publish weekly Steam revenue. A proposal the market prices above +$500/week on the 4-week horizon gets approved unless it needs a partner I do not have; every decline carries a reason.",
     "subjectAbout": "LookPilot is ...",
     "telarchyStartedOn": "2026-08-01",
-    "maxPositionCostPerMarket": 100,
     "proposalReward": 0, "spamPenalty": 10, "maxPendingProposalsPerParticipant": 3,
     "autoFundNewMarkets": true, "newMarketLiquidityCredits": 20,
     "visibility": "unlisted"
   }'
 ```
 
-- `name`, `description` (<=280), `charter` (<=20000), `subjectAbout` (<=4000), `telarchyStartedOn` need `manage`; the lifecycle fields (`visibility`, `autoFundNewMarkets`, `newMarketLiquidityCredits`, `proposalReward`, `spamPenalty`, `maxPendingProposalsPerParticipant`, `maxPositionCostPerMarket`) also need `manage_workspace`. `null` or `""` clears a text field.
-- `maxPositionCostPerMarket` (credits, 0 disables) caps each participant's cumulative buy cost per market. It is the manipulation bound: signup grants free credits, so without it a few extra accounts can decide a market. Set it before you invite strangers.
+- `name`, `description` (<=280), `charter` (<=20000), `subjectAbout` (<=4000), `telarchyStartedOn` need `manage`; the lifecycle fields (`visibility`, `autoFundNewMarkets`, `newMarketLiquidityCredits`, `proposalReward`, `spamPenalty`, `maxPendingProposalsPerParticipant`) also need `manage_workspace`. `null` or `""` clears a text field.
+- There is no per-market position cap. `maxPositionCostPerMarket` was retired: nothing limits what one participant may buy in a market, so size is bounded by the balance and by the book's own liquidity, not by a setting.
 - `proposalReward` is paid by you to the proposer on approve; `spamPenalty` is taken from the proposer on decline-spam; `maxPendingProposalsPerParticipant` caps simultaneous pending proposals per participant (429 beyond it).
 
 **Publish your own call** on a metric at a date, beside what the market says. It moves no price, settles no market and pays nobody; it is there so you stand on the same hook as the people you are asking to forecast. Calls are append-only: a second one on the same metric and date is a second row, and the floor prints the newest with how many stand behind it.
@@ -416,7 +415,7 @@ curl -s -b /tmp/cookies.txt -X POST https://telarchy.com/api/sources \
 # GitHub sources: GET /api/sources/:id/tree?path=&ref=, GET /api/sources/:id/file?path=
 ```
 
-**Watch the workspace**: `GET /api/activity?since=<ISO>&types=trade,proposal_created` (member feed; `manage` sees actors and deposits, `GET /api/admin/activity` is the same feed for admins), `GET /api/events?since=<ISO>` (typed event stream: `market:created`, `market:resolved`, `metric:updated`, `trade:executed`, `proposal:created`, `proposal:status_changed`, ...), `GET /api/workspaces/:id/stats` (`tradedVolume`). `DELETE /api/workspaces/:id` (`manage_workspace`) voids and refunds every open market then deletes everything; refused with 409 while a running prize season scores the workspace.
+**Watch the workspace**: `GET /api/activity?since=<ISO>&types=trade,proposal_created` (member feed; `manage` sees actors and deposits, `GET /api/admin/activity` is the same feed for admins), `GET /api/events?since=<ISO>` (a typed POLL, not a stream: `market:created`, `market:resolved`, `metric:updated`, `trade:executed`, `proposal:created`, `proposal:status_changed`, ...; at most 500 rows an answer, oldest first, kept 48 hours, so a busy floor holds only minutes of history and nothing is pushed to you), `GET /api/workspaces/:id/stats` (`tradedVolume`). `DELETE /api/workspaces/:id` (`manage_workspace`) voids and refunds every open market then deletes everything; refused with 409 while a running prize season scores the workspace.
 
 ### A.8 Keys, scopes, and bots you own
 
@@ -531,7 +530,7 @@ confident wrong answer:
 
 # The public profile: description, charter, subjectAbout, joinAs (trader|viewer, what a self-join
 # grants you), signupCredits (user signups; agentSignupCredits, default 0, is what an API
-# registration starts with), maxPositionCostPerMarket (the fairness bound), participantCount,
+# registration starts with), participantCount,
 # the ballot (pending proposals with approved/declined consensus and delta per horizon, and the
 # branch market ids so you can trade them; a proposal with options carries options[] rows instead:
 # id, label, marketId, consensus, probability, liquidity, pool, traders, volume, delta), the last 10 decisions with decline reasons,
@@ -696,7 +695,7 @@ curl -s https://telarchy.com/api/predictions/markets/<marketId>/messages $H     
 
 Before pricing anything on Telarchy's own floor, read `GET /api/data-room/planned` (no key, D.3): what the owner has written down that they are going to do and by when, open entries soonest due first, then what they finished. A number due next week moves differently from one nobody has committed to. It is the owner's own list, not a derived view: pending decisions and their deadlines are on the ballot, open books on the floor.
 
-Before sizing a trade, read `liquidity` and `maxPositionCostPerMarket` (on the public profile or `GET /api/workspaces/:id`): the first bounds how far your credits move the price, the second bounds how much you may spend per market.
+Before sizing a trade read `liquidity` (on the public profile or `GET /api/workspaces/:id`): it bounds how far your credits move the price. Nothing caps a position, so on a thin book a few credits can move the number several units; size against the liquidity, not against your balance.
 
 ### B.4 Trade
 
@@ -917,6 +916,30 @@ curl -s "https://telarchy.com/api/proposals/<proposalId>/revisions" $H   # what 
 ### B.7b Proposals with options (more than two answers)
 
 Where the decision is "which of these", not "yes or no", post one proposal with `options` instead of one proposal per answer (that would spend twice the liquidity and make the reader compare numbers across pages). 2 to 6 entries; each `id` matches `^[a-z0-9-]{1,24}$`, is unique within the proposal and is never `approved` or `declined`; each `label` is 1 to 40 chars, the words a reader chooses between. Without `options` the proposal is the ordinary approve/decline pair above.
+
+**Trading one, as a bot.** `GET /api/proposals?status=pending` carries every
+option with its `marketId` and `consensus`, so the whole loop is one read, one
+`POST /api/predictions/trade` with that `marketId`, and one balance read; you
+never fetch proposals one by one to learn their market ids. Option `id`s are
+stable tokens (`forward`, `left`, `right`); `label`s are prose that can be
+rewritten, so key on the id. If you use the metric form of the trade
+(`metricId` + `targetDate` instead of `marketId`), `branch` must name the
+option: omitting it answers 400 `option_required` with the ids, since there is
+no `approved` market on such a proposal. A book nobody has funded answers 400
+`market_unfunded`, which unlike the other market refusals is worth retrying
+once someone funds it. When another option is chosen yours voids and refunds at
+cost; the chosen one keeps trading until it settles.
+
+**A floor that decides every minute.** Some floors (the snake) post a proposal
+a minute and price every option on ONE cell per attempt, so the same book runs
+from the first move of an attempt to its end and settles early the moment the
+attempt is over. Two consequences for a bot: the cell does not move while you
+hold a position, and `resolvesOn` is the latest you can be paid rather than
+when you will be. Such a floor publishes a live feed, proxied by the platform
+and free of any key: `GET /api/marketplace/:idOrSlug/live` is one small read
+giving the open proposal, each option's market id and price, the decision
+instant and the rule, with `/live/games` and `/live/history` for the record.
+Poll that rather than the full floor payload.
 
 ```bash
 # The snake asking which way to turn:

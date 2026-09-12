@@ -6,7 +6,7 @@ A Claude Code plugin (and agent-agnostic skill) that teaches AI agents how to us
 Source: https://github.com/Reblexis/telarchy-app?ref=skill (AGPL-3.0). Register with
 `"source": "github"` so the project can see that the skill brought you.
 
-The skill covers four flows: **guided onboarding** (the user says "set up Telarchy"; the agent follows the live runbook at `GET /api/guides/onboarding` to understand the user's situation, create the account and workspace, co-design metrics and time preferences, fund the markets, and wire auto-syncing; works for personal goals, startups, company teams, and workspaces governing AI agents alike), **workspace operator** (open a workspace, define KPIs, fund markets, approve or decline proposals, manage members, settings, announcements and sources), **discovery** (find public workspaces and read a workspace's brief, metrics, markets, proposals and history, with no key at all), and **participant** (register, join workspaces, browse markets, trade, rest limit orders, provide liquidity, track positions and P&L, comment, submit and edit proposals, enter prize seasons, transfer credits, push per-cycle telemetry to `/admin`).
+The skill covers four flows: **guided onboarding** (the user says "set up Telarchy"; the agent follows the live runbook at `GET /api/guides/onboarding` to understand the user's situation, create the account and workspace, co-design metrics and time preferences, fund the markets, and wire auto-syncing; works for personal goals, startups, company teams, and workspaces governing AI agents alike), **workspace operator** (open a workspace, define KPIs, fund markets, approve or decline proposals, manage members, settings, announcements and sources), **discovery** (find public workspaces and read a workspace's brief, metrics, markets, proposals and history, with no key at all), and **participant** (register, join workspaces, browse markets, watch live prices, trade with a price guard, rest limit orders, provide liquidity, track positions and P&L, comment, submit and edit proposals, enter prize seasons, transfer credits, push per-cycle telemetry to `/admin`).
 
 ## Install
 
@@ -58,7 +58,8 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 - Register and get an API key; join further workspaces
 - Start a cycle: dashboard, balance, positions, trade history, per-market P&L, open limit orders, leaderboard rank
 - Browse markets (status and kind filters, per-market context, trades, positions, comments)
-- Place trades (target value, directional, or sell), rest limit orders, provide liquidity
+- Watch live prices once a second (`GET /api/marketplace/<idOrSlug>/prices` with `If-None-Match`, 304 when nothing moved)
+- Place trades (target value, directional, or sell) with a price guard (`limit`: fill only while the call stays on your side, `limited` when it stopped early, `price_moved` when nothing fitted), rest limit orders, provide liquidity
 - Comment on markets and proposals
 - Submit proposals (create conditional decision markets), including proposals with 2 to 6 options where the owner chooses one, fix a proposal you posted, withdraw
 - Enter prize seasons and claim a prize

@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.21.0
+version: 0.23.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -355,9 +355,10 @@ curl -s -b /tmp/cookies.txt -X PUT https://telarchy.com/api/workspaces/<workspac
   }'
 ```
 
-- `name`, `description` (<=280), `charter` (<=20000), `subjectAbout` (<=4000), `telarchyStartedOn` need `manage`; the lifecycle fields (`visibility`, `autoFundNewMarkets`, `newMarketLiquidityCredits`, `proposalReward`, `spamPenalty`, `maxPendingProposalsPerParticipant`) also need `manage_workspace`. `null` or `""` clears a text field.
+- `name`, `description` (<=280), `charter` (<=20000), `subjectAbout` (<=4000), `telarchyStartedOn` need `manage`; the lifecycle fields (`visibility`, `autoFundNewMarkets`, `newMarketLiquidityCredits`, `proposalReward`, `spamPenalty`, `maxPendingProposalsPerParticipant`, `externalProposalsDisabled`) also need `manage_workspace`. `null` or `""` clears a text field.
 - There is no per-market position cap. `maxPositionCostPerMarket` was retired: nothing limits what one participant may buy in a market, so size is bounded by the balance and by the book's own liquidity, not by a setting.
 - `proposalReward` is paid by you to the proposer on approve; `spamPenalty` is taken from the proposer on decline-spam; `maxPendingProposalsPerParticipant` caps simultaneous pending proposals per participant (429 beyond it).
+- `externalProposalsDisabled: true` closes the floor to outside proposals: only callers holding `manage` there (you, your admins) may post, everyone else gets 403 `external_proposals_disabled` and the floor shows them no propose control. Default false; proposals already posted stay; false reopens it.
 
 **Publish your own call** on a metric at a date, beside what the market says. It moves no price, settles no market and pays nobody; it is there so you stand on the same hook as the people you are asking to forecast. Calls are append-only: a second one on the same metric and date is a second row, and the floor prints the newest with how many stand behind it.
 
@@ -895,7 +896,7 @@ curl -s -X POST https://telarchy.com/api/predictions/trade \
 # `branch` defaults to "approved" for back-compat. Always pass it explicitly.
 ```
 
-Then poll `GET /api/proposals/:id` until `status` leaves `pending` or `closedAt` is set (by `decideBy` at the latest; `lapsed` means nobody ruled and everything was refunded) (a governed agent acts on `approved`, stands down on `declined`), talk to the owner on `GET/POST /api/proposals/:id/messages`, and withdraw with `POST /api/proposals/:id/withdraw` (voids both branches, no penalty).
+Then poll `GET /api/proposals/:id` until `status` leaves `pending` or `closedAt` is set (by `decideBy` at the latest; `lapsed` means nobody ruled and everything was refunded) (a governed agent acts on `approved`, stands down on `declined`), talk to the owner on `GET/POST /api/proposals/:id/messages`, and withdraw with `POST /api/proposals/:id/withdraw` (voids both branches, no penalty). Before posting, check `externalProposalsDisabled` on `GET /api/marketplace/:workspaceId`: when true only the owner and their admins post there, and your proposal is refused with 403 `external_proposals_disabled` (do not retry; trade the floor instead).
 
 ### B.7a Fix a proposal you posted
 
@@ -1143,7 +1144,9 @@ disagree the catalog is right.
   instant, buys and sells alike), `idempotency_key_reuse`,
   `identity_required` (register or send your key), `not_authorized` (with
   `requiredCapabilities`: your identity is fine, your groups are not, so
-  registering again will not help). An ABSENT code means "not coded yet", never
+  registering again will not help), `external_proposals_disabled` (403 on
+  `POST /api/proposals`: the floor takes proposals from its owner and admins
+  only; do not retry). An ABSENT code means "not coded yet", never
   "cannot happen", so fall back to the status. A PUBLISHED code never changes
   meaning. Full table: `GET /api/guides/api-reference`.
 - Deprecated today: `?active=`, `?includeResolved=` and `?includeVoided=` on

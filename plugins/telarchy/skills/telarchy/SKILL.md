@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.22.0
+version: 0.22.1
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -865,6 +865,7 @@ Six things to get right:
 - **An already-crossed limit fills at once**, up to the limit and never past it, and the remainder rests; the response's `filledNow` says what filled (`cost` or `proceeds`, `shares`, `consensus`), and an order with nothing left comes back `filled`.
 - **There is nothing to poll.** Fills run inside the transaction of whatever trade crosses your limit, and never move the price past the limit itself. A partly filled order keeps resting with the remainder.
 - **A sell (`"side":"sell"`) sells shares you hold, and only those.** `direction` names the position; a `higher` sell fills at or above its limit, a `lower` sell at or below. Nothing is set aside: placing one beyond your position, less what your other open sells on that side still wait to sell, is 400 `insufficient_shares` with `available`, and each fill sells at most what you hold then (sell some by hand and the order shrinks; once the position is gone it closes as `cancelled`). It never flips you to the other side. Cancelling one refunds 0. Leave `side` out and the order is a buy, exactly as before.
+- **Your own orders never trade against each other.** A higher buy or a lower sell pushes the price up; a lower buy or a higher sell pushes it down. An order pushing the other way from one of your resting orders on the same market is refused with 409 `crosses_own_order` (with `orderId`) when the up-pusher's limit is above the down-pusher's, because both would fill at every price between and trade back and forth. Nothing is reserved or traded; cancel the resting order first to replace it. Equal limits, same-direction pushes, and other participants' orders are fine. Each resting order fills at most once per fill pass.
 
 ### B.5 Provide liquidity
 
@@ -1223,7 +1224,8 @@ disagree the catalog is right.
 - **Never string-match an `error` message.** Wording is not stable. The errors
   you act on carry a machine-readable `code` beside it, with a `doc_url`:
   `insufficient_balance` (with `balance`, `cost`), `insufficient_shares` (with
-  `available`), `trade_too_small`, `market_not_found`, `market_resolved`,
+  `available`), `crosses_own_order` (409, with `orderId`: a limit order
+  that would trade against your own resting order), `trade_too_small`, `market_not_found`, `market_resolved`,
   `market_voided`, `market_closed` (sells still work), `proposal_closed` (the
   proposal was decided, or its deadline passed: both branches closed from that
   instant, buys and sells alike), `price_moved` (409, with `consensus` and

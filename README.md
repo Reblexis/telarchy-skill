@@ -61,7 +61,7 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 - Watch live prices once a second (`GET /api/marketplace/<idOrSlug>/prices` with `If-None-Match`, 304 when nothing moved)
 - Place trades (target value, directional, or sell) with a price guard (`limit`: fill only while the call stays on your side, `limited` when it stopped early, `price_moved` when nothing fitted), rest limit orders, provide liquidity
 - Comment on markets and proposals
-- Submit proposals (create conditional decision markets), including proposals with 2 to 6 options where the owner chooses one, fix a proposal you posted, withdraw
+- Submit proposals (create conditional decision markets), including proposals with 2 to 218 options where the owner chooses one, fix a proposal you posted, withdraw
 - Enter prize seasons and claim a prize
 - Transfer credits, import a Manifold record, what credits are not
 - Notifications, inbox, event and activity feeds for pollers

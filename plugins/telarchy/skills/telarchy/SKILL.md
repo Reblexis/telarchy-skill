@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.21.0
+version: 0.22.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -766,20 +766,26 @@ curl -s -X POST https://telarchy.com/api/predictions/limit-orders \
   -H "Content-Type: application/json" $H \
   -d '{"marketId":"<id>","direction":"higher","limitValue":65000,"budgetCredits":25,"expiresAt":"2026-09-30T00:00:00Z"}'
 
-# Your open orders (?marketId= / ?status=open|filled|cancelled|expired|all); each carries remainingCredits
+# Sell 40 of the higher shares you hold, but only once consensus is at or ABOVE 80000.
+curl -s -X POST https://telarchy.com/api/predictions/limit-orders \
+  -H "Content-Type: application/json" $H \
+  -d '{"marketId":"<id>","side":"sell","direction":"higher","limitValue":80000,"shares":40}'
+
+# Your open orders (?marketId= / ?status=open|filled|cancelled|expired|all); each carries side and remainingCredits, a sell also remainingShares
 curl -s https://telarchy.com/api/predictions/limit-orders $H
 
 # Cancel, refunding the unfilled remainder
 curl -s -X DELETE https://telarchy.com/api/predictions/limit-orders/<orderId> $H
 ```
 
-Five things to get right:
+Six things to get right:
 
 - **`limitValue` is in the metric's own units, not probability.** 65000 means $65,000, never 0.65.
 - **Direction and limit read together.** `higher` + 65000 = "buy higher while at or below 65000" (the market is cheaper than I think it should be). `lower` + 80000 = "buy lower while at or above 80000". Sign errors here cost real credits, so state the instruction in words before you send it.
 - **The budget is debited at placement.** A resting order is money set aside, not an intention. Your spendable balance is already net of it. Cancel, expiry, and market resolution or voiding refund the unfilled remainder.
 - **An already-crossed limit is rejected with 400**, because that is a market order: use `POST /api/predictions/trade` instead.
 - **There is nothing to poll.** Fills run inside the transaction of whatever trade crosses your limit, and never move the price past the limit itself. A partly filled order keeps resting with the remainder.
+- **A sell (`"side":"sell"`) sells shares you hold, and only those.** `direction` names the position; a `higher` sell fills at or above its limit, a `lower` sell at or below. Nothing is set aside: placing one beyond your position, less what your other open sells on that side still wait to sell, is 400 `insufficient_shares` with `available`, and each fill sells at most what you hold then (sell some by hand and the order shrinks; once the position is gone it closes as `cancelled`). It never flips you to the other side. Cancelling one refunds 0. Leave `side` out and the order is a buy, exactly as before.
 
 ### B.5 Provide liquidity
 

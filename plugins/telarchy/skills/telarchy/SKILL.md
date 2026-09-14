@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.22.2
+version: 0.22.3
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -706,7 +706,7 @@ no key and answers in a few hundred bytes:
 
 ```bash
 curl -s -D headers.txt https://telarchy.com/api/marketplace/<idOrSlug>/prices
-# 200 { asOf, version, books: [{ marketId, consensus, probability, pool, tradeCount }] }
+# 200 { asOf, version, books: [{ marketId, consensus, probability, pool, tradeCount, orders }] }
 # Send the ETag back (it equals `version`) and an unmoved floor answers 304 with no body:
 curl -s -o /dev/null -w "%{http_code}\n" \
   -H 'If-None-Match: "<etag from headers.txt>"' \
@@ -719,6 +719,15 @@ curl -s -o /dev/null -w "%{http_code}\n" \
   liquidity), `probability` the same as a fraction of the range, `pool` the
   credits in the pool. `tradeCount` counts the same rows as a dry run's
   `basis.tradeCount` (B.4), so the two can be compared to spot a stale quote.
+- `orders` is every open limit order resting on the book, anonymous:
+  `{ id, side, direction, limitValue, left, holder, held: { higher, lower }, expiresAt? }`.
+  `left` is credits on a buy and shares on a sell, `holder` a number standing
+  for one participant within that book and answer, `held` that participant's
+  shares (a sell never sells more). A trade that crosses one of these is
+  pulled back by it in the same transaction, so the price you move a book to
+  is not the price it rests at; run the fill pass on this list, or ask a dry
+  run for `settledConsensus` (B.4). Placing or cancelling an order moves the
+  version.
 - `asOf` is the moment the server last knew these prices to be current. A trade
   taken anywhere reaches this read within about a second.
 - **Always send `If-None-Match`.** The server answers from memory while prices
@@ -804,6 +813,11 @@ curl -s -X POST https://telarchy.com/api/predictions/trade \
 # 200 { dryRun, shares, cost, redeemed, probability, consensus, prevConsensus,
 #       balance, affordable, shortfall, basis:{tradeCount,liquidity,consensus} }
 ```
+
+If the trade would cross resting limit orders, the quote also carries
+`limitFills` and `settledConsensus`, the price after those orders fill,
+exactly as the real trade reports them. `consensus` is where your own fill
+leaves the book; `settledConsensus` is where it comes to rest.
 
 It runs the same transaction as a real trade and rolls it back, so the numbers
 are the numbers you would get. It needs your key and trade permission, refuses

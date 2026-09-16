@@ -356,6 +356,7 @@ curl -s -b /tmp/cookies.txt -X PUT https://telarchy.com/api/workspaces/<workspac
   }'
 ```
 
+- `optionQuestionTemplate` sets the display question for proposals with options. It needs `manage`, accepts at most 500 trimmed characters, requires `{option}`, and can also use `{workspace}`, `{metric}` and `{date}`. Substitution is plain text, once. Null or blank restores the default; unknown or unmatched placeholders are 400 and leave the saved setting unchanged. The workspace profile returns it. Example: `{"optionQuestionTemplate":"If the move {option} is made, what will {workspace}'s final {metric} be?"}`. This changes wording, never settlement. The date title remains a separate metric setting.
 - `name`, `description` (<=280), `charter` (<=20000), `subjectAbout` (<=4000), `telarchyStartedOn` need `manage`; the lifecycle fields (`visibility`, `autoFundNewMarkets`, `newMarketLiquidityCredits`, `proposalReward`, `spamPenalty`, `maxPendingProposalsPerParticipant`, `externalProposalsDisabled`) also need `manage_workspace`. `null` or `""` clears a text field.
 - There is no per-market position cap. `maxPositionCostPerMarket` was retired: nothing limits what one participant may buy in a market, so size is bounded by the balance and by the book's own liquidity, not by a setting.
 - `proposalReward` is paid by you to the proposer on approve; `spamPenalty` is taken from the proposer on decline-spam; `maxPendingProposalsPerParticipant` caps simultaneous pending proposals per participant (429 beyond it).

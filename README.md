@@ -40,7 +40,7 @@ The skill is deliberately bounded. It walks the agent through the flows that cov
 
 **As a workspace operator** (section A):
 - Sign up and open a workspace from a template (the three-per-account cap, the unlisted-by-default rule, why a workspace without a horizon is not a market)
-- Define KPIs (single metrics or composite formulas, time preference, custom horizons, `resetsEvery`, `resolvesNaUntilMeasured`) and what an edit may and may not change
+- Define KPIs (single metrics or composite formulas, time preference, custom horizons, `resetsEvery`, `resolvesNaUntilMeasured`, `opensAt`) and what an edit may and may not change
 - Update metric values (the check-in or the sync) and how settlement fixes on the reading at `resolvesOn`
 - Create, fund, void and resolve markets
 - Approve (or choose one option of a multiple-choice proposal), decline, decline-as-spam, or remove proposals; read the negotiation thread

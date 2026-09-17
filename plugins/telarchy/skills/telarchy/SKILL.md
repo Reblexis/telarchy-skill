@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.25.0
+version: 0.26.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -957,7 +957,10 @@ curl -s -X POST https://telarchy.com/api/proposals \
 # is its own outcome and not a decline. Only cells whose date settles after decideBy get a pair.
 ```
 
-**Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. A proposal is
+**Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. Or pass
+`liquidityBudget` instead (never both, 400): the WHOLE amount you will spend, split evenly across every market the
+proposal spawns and rounded down, so you need no market count. Where the owner named a `proposal` number on a date,
+your seed is ADDED to it, never in place of it. A proposal is
 the proposer's to fund: omitting it ships markets with zero liquidity unless the owner named a `proposal` number on
 that date (`timePreference.horizonCredits`, A.2), and the floor then says "no price yet" in place of the bet buttons. The pair opens **anchored at the
 baseline market's current consensus** (the approved branch additionally minus `askUsd`, since approval burns the ask
@@ -1043,6 +1046,8 @@ curl -s "https://telarchy.com/api/predictions/markets?proposalId=<proposalId>" $
 curl -s -X POST https://telarchy.com/api/predictions/trade -H "Content-Type: application/json" $H \
   -d '{"marketId":"<the left market>","targetValue":12,"maxBudget":5}'
 # Deepen every option's market at once: POST /api/predictions/markets/liquidity/bulk { amount, proposalId }.
+# { budget, proposalId } names the whole bill instead (split evenly, rounded down). Needs manage, except that the
+# proposer of a PENDING proposal may fund their own with trade alone, from their own balance.
 ```
 
 Read it on `GET /api/proposals/:id`: each `markets[]` row has `options[]` (`id`, `label`, `marketId`, `consensus`, `liquidity`, `tradeCount`, `resolved`, `voided`, `actualValue`, `delta`) with `approved`/`declined` null. An option's `delta` is its consensus minus the best OTHER option, so the leader reads positive and the rest negative; the row's `delta` is the leader's lead; null until two options are priced. The owner decides with `POST /api/proposals/:id/approve { "option": "left" }`: the left markets stay live and settle, forward and right void and refund, status `approved`, `decidedOption` = `left`. A governed agent acts on `decidedOption`, not on `approved` alone. Decline means "none of these" and voids every option; so do withdraw, spam, remove and the lapse at `decideBy`.

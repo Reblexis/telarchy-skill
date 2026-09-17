@@ -957,10 +957,13 @@ curl -s -X POST https://telarchy.com/api/proposals \
 # is its own outcome and not a decline. Only cells whose date settles after decideBy get a pair.
 ```
 
-**Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. Or pass
-`liquidityBudget` instead (never both, 400): the WHOLE amount you will spend, split evenly across every market the
-proposal spawns and rounded down, so you need no market count. Where the owner named a `proposal` number on a date,
-your seed is ADDED to it, never in place of it. A proposal is
+**Pass `liquiditySubsidy` at creation.** Cost = subsidy x leaf metrics x 2 branches, from your balance. Or choose
+PER BOOK with `liquidity: [{ metricId, targetDate, amount }]` instead (never both, 400): `amount` goes into each branch
+book of that metric and date and nothing anywhere else, so you can fund only the date your argument is about. The books
+you may name are the rows of `GET /api/marketplace/:workspaceId` `markets[]` whose `proposalOpensWith` is not null and
+whose `periodEndsOn` is after your `decideBy`; any other book is a 400 that names it. You pay from liquidity credits
+first, trading credits second, and **trading credits in a pool count against your profit and season score until they
+come back**. Where the owner named a `proposal` number on a date (`proposalOpensWith`), your seed is ADDED to it. A proposal is
 the proposer's to fund: omitting it ships markets with zero liquidity unless the owner named a `proposal` number on
 that date (`timePreference.horizonCredits`, A.2), and the floor then says "no price yet" in place of the bet buttons. The pair opens **anchored at the
 baseline market's current consensus** (the approved branch additionally minus `askUsd`, since approval burns the ask
@@ -1046,8 +1049,8 @@ curl -s "https://telarchy.com/api/predictions/markets?proposalId=<proposalId>" $
 curl -s -X POST https://telarchy.com/api/predictions/trade -H "Content-Type: application/json" $H \
   -d '{"marketId":"<the left market>","targetValue":12,"maxBudget":5}'
 # Deepen every option's market at once: POST /api/predictions/markets/liquidity/bulk { amount, proposalId }.
-# { budget, proposalId } names the whole bill instead (split evenly, rounded down). Needs manage, except that the
-# proposer of a PENDING proposal may fund their own with trade alone, from their own balance.
+# { proposalId, liquidity: [{ metricId, targetDate, amount }] } funds chosen books instead. Needs manage, except that the
+# proposer of a PENDING proposal may fund their own with trade alone, from their own credits (liquidity credits first).
 ```
 
 Read it on `GET /api/proposals/:id`: each `markets[]` row has `options[]` (`id`, `label`, `marketId`, `consensus`, `liquidity`, `tradeCount`, `resolved`, `voided`, `actualValue`, `delta`) with `approved`/`declined` null. An option's `delta` is its consensus minus the best OTHER option, so the leader reads positive and the rest negative; the row's `delta` is the leader's lead; null until two options are priced. The owner decides with `POST /api/proposals/:id/approve { "option": "left" }`: the left markets stay live and settle, forward and right void and refund, status `approved`, `decidedOption` = `left`. A governed agent acts on `decidedOption`, not on `approved` alone. Decline means "none of these" and voids every option; so do withdraw, spam, remove and the lapse at `decideBy`.

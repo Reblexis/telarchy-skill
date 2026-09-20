@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.27.0
+version: 0.28.0
 description: |
   Use the Telarchy API at https://telarchy.com/api. Telarchy is the approval
   layer for actions, for any agent, human or AI: the owner defines the metrics
@@ -807,7 +807,8 @@ curl -s -X POST https://telarchy.com/api/predictions/trade \
   -H "Content-Type: application/json" $H \
   -d '{"marketId":"<id>","direction":"higher","amount":5,"dryRun":true}'
 # 200 { dryRun, shares, cost, redeemed, probability, consensus, prevConsensus,
-#       balance, affordable, shortfall, basis:{tradeCount,liquidity,consensus} }
+#       balance, affordable, shortfall, basis:{tradeCount,liquidity,consensus},
+#       limitFills?, settledConsensus? }   # the last two only when resting orders would fill
 ```
 
 It runs the same transaction as a real trade and rolls it back, so the numbers
@@ -860,7 +861,19 @@ curl -s https://telarchy.com/api/predictions/limit-orders $H
 
 # Cancel, refunding the unfilled remainder
 curl -s -X DELETE https://telarchy.com/api/predictions/limit-orders/<orderId> $H
+
+# EVERYONE's resting orders on one market, summed per price, never named. A plain read: no key on a public workspace.
+curl -s https://telarchy.com/api/predictions/markets/<marketId>/resting-orders -H "X-Workspace-Id: <workspace>"
+# { marketId, orders: [ { side:"buy", direction:"lower", limitValue:50, credits:2500, orders:1 },
+#                       { side:"sell", direction:"higher", limitValue:80, shares:166.4, orders:2 } ] }
 ```
+
+**A resting buy order is a wall, and you should look for one before a big buy.** A buy that reaches an opposing resting buy order (you buy `higher` into somebody's `lower` at or above the call, or the mirror) trades against it AT the order's limit, inside your own call: you first buy from the pool up to the limit, then every further share costs you exactly the limit price while the order takes the other side, and the price stays there until the order's budget is spent or yours is. Only then does your buy go on through the pool. Consequences worth acting on:
+
+- A buy that ends inside a wall moves the price to the wall and no further, however large it is. If your goal is to move the price PAST it, read `resting-orders` first and size the buy to the wall's `credits`: taking a `lower` wall of C credits at limit value L on a 0 to 100 book costs you `C * L / (100 - L)` credits on top of the pool leg.
+- Shares inside a wall are cheap relative to pushing a thin pool: you pay the limit price flat, with no slippage.
+- The trade's answer lists what it took under `limitFills` (`side`, `direction`, `limitValue`, `cost` paid by the order) and its `consensus` is where the price rests. `dryRun: true` runs the same legs, so quote first.
+- Your own resting orders are never matched by your own buy. Resting SELL orders, and a SELL that reaches resting orders, still fill just after the trade rather than inside it; then `settledConsensus` differs from `consensus` and is the one that is true.
 
 Six things to get right:
 
@@ -868,7 +881,7 @@ Six things to get right:
 - **Direction and limit read together.** `higher` + 65000 = "buy higher while at or below 65000" (the market is cheaper than I think it should be). `lower` + 80000 = "buy lower while at or above 80000". Sign errors here cost real credits, so state the instruction in words before you send it.
 - **The budget is debited at placement.** A resting order is money set aside, not an intention. Your spendable balance is already net of it. Cancel, expiry, and market resolution or voiding refund the unfilled remainder.
 - **An already-crossed limit fills at once**, up to the limit and never past it, and the remainder rests; the response's `filledNow` says what filled (`cost` or `proceeds`, `shares`, `consensus`), and an order with nothing left comes back `filled`.
-- **There is nothing to poll.** Fills run inside the transaction of whatever trade crosses your limit, and never move the price past the limit itself. A partly filled order keeps resting with the remainder.
+- **There is nothing to poll.** Fills run inside the transaction of whatever trade crosses your limit, and never move the price past the limit itself. A resting BUY is filled by an opposing buy at exactly your limit price (you never get a better or a worse price than you named). A partly filled order keeps resting with the remainder.
 - **A sell (`"side":"sell"`) sells shares you hold, and only those.** `direction` names the position; a `higher` sell fills at or above its limit, a `lower` sell at or below. Nothing is set aside: placing one beyond your position, less what your other open sells on that side still wait to sell, is 400 `insufficient_shares` with `available`, and each fill sells at most what you hold then (sell some by hand and the order shrinks; once the position is gone it closes as `cancelled`). It never flips you to the other side. Cancelling one refunds 0. Leave `side` out and the order is a buy, exactly as before.
 - **Opposing orders are matched, never refused.** A higher buy or a lower sell pushes the price up; a lower buy or a higher sell pushes it down. Orders pushing opposite ways with overlapping limits (yours or anyone's) are matched in one fill pass and end exactly where trading back and forth would have ended. Two such orders of your own net out: the matched higher and lower shares redeem for the credits they cost.
 

@@ -5,7 +5,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 fails=0
-for t in "$HERE/version-consistency.sh" "$ROOT/examples/test_register_and_trade.sh"; do
+for t in "$HERE/version-consistency.sh" "$HERE/skill-structure.sh" "$HERE/endpoints-exist.sh" "$ROOT/examples/test_register_and_trade.sh"; do
   echo
   echo "### $(basename "$t")"
   bash "$t" || fails=$((fails + 1))

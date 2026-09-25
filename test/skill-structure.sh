@@ -42,6 +42,14 @@ for name in sorted(present & expected):
     for ref in set(re.findall(r'references/[A-Za-z0-9_.\-]+\.md', text)):
         if not os.path.exists(os.path.join(d, ref)):
             fails.append(f'{name}: points at {ref}, which does not exist')
+# Facts the code enforces that a skill once got wrong. The seeded Admin group
+# holds read, trade and manage, never manage_workspace (telarchy-app
+# routes/groups.ts SYSTEM_GROUP_CAPABILITIES): a skill that says otherwise
+# sends an owner's admin into 403s on every lifecycle setting.
+for name in sorted(present & expected):
+    for i, line in enumerate(open(os.path.join(skills_dir, name, 'SKILL.md')), 1):
+        if re.search(r'`?Admin`?\s*\([^)]*manage_workspace', line):
+            fails.append(f'{name}:{i}: says the Admin group holds manage_workspace; it does not')
 # no dashes anywhere a reader sees
 for dirpath, _, files in os.walk(root):
     if '/.git' in dirpath or 'workspace' in dirpath: continue

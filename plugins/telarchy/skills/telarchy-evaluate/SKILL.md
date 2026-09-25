@@ -54,7 +54,7 @@ Read each candidate's metrics (the brief, or `GET /api/metrics` with `X-Workspac
 - **Several fit**: ask the user which, naming the metric each would be judged on.
 - **None fits**, or the user has no workspace: say so plainly, and ask whether they want a workspace for it. On a yes, set it up with **telarchy-manage** (the account and workspace) and **telarchy-metric-design** (what to measure: the metrics must be the outcomes this idea is meant to move, not the idea's own activity). Fund its books, then come back here. On a no, stop: there is nothing for a market to price against.
 
-A floor with metrics but no open, funded books cannot price anything either. Check `GET /api/marketplace/<idOrSlug>`: its `markets[]` rows are the books a proposal will be priced on.
+A floor with metrics but no open, funded books cannot price anything either. Check `GET /api/marketplace/<idOrSlug>`: its `markets[]` rows are the books a proposal will be priced on, and **only books whose `periodEndsOn` is after the proposal's deadline get a pair**. If every open book settles before a sensible deadline, or none of them covers the window where the idea would show its effect (a month-long campaign judged on a book that closes next week), the proposal would open with nothing worth reading. Say so, and propose the fix: the owner adds a date that covers the effect (telarchy-manage, section 3), then you post against it.
 
 ## 3. Check it can go up, and is not already there
 

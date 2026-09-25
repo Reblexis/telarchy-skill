@@ -116,7 +116,7 @@ curl -s "https://telarchy.com/api/proposals?status=pending" $H
 curl -s https://telarchy.com/api/proposals/<id> $H          # markets[]: approved, declined, delta, baselineConsensus per metric and date
 ```
 
-**Read the gap, not the move.** Per metric and date, `delta = approved consensus - declined consensus` is what approving is worth. A rise in the baseline only says the crowd expects a yes. A pair with no liquidity or no trades has no price: say so, and offer to fund it (`POST /api/predictions/markets/liquidity/bulk { amount, proposalId }`) rather than reading the seed as a verdict. `GET /api/marketplace/<id>/context?format=md` is the same numbers as one brief.
+**Read the gap, not the move.** Per metric and date, `delta = approved consensus - declined consensus` is what approving is worth. A rise in the baseline only says the crowd expects a yes. A pair with no liquidity or no trades has no price: say so, and offer to fund it (`POST /api/predictions/markets/liquidity/bulk { amount, proposalId }`) rather than reading the seed as a verdict. `GET /api/marketplace/<workspace id or slug>/context?format=md` is the same numbers for the whole floor as one brief, and `GET /api/marketplace/<workspace id or slug>/contracts` lists every proposal with its priced impact.
 
 Present the owner with the delta on the metrics and dates they care about, how many traded it and how deep it is, the ask, and the deadline. Then, on their word:
 

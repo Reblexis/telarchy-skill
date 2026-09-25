@@ -1,12 +1,9 @@
 # telarchy-skill
 
-A Claude Code plugin (and agent-agnostic skill) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy is the approval layer for actions, for any agent, human or AI: the owner defines the metrics they value, participants propose actions, a market prices each proposal's expected impact on those metrics, the owner approves on a calibrated number.
-
+A Claude Code plugin (and a set of agent-agnostic skills) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy is the approval layer for actions, for any agent, human or AI: the owner defines the metrics they value, participants propose actions, a market prices each proposal's expected impact on those metrics, the owner approves on a calibrated number.
 
 Source: https://github.com/Reblexis/telarchy-app?ref=skill (AGPL-3.0). Register with
 `"source": "github"` so the project can see that the skill brought you.
-
-The skill covers four flows: **guided onboarding** (the user says "set up Telarchy"; the agent follows the live runbook at `GET /api/guides/onboarding` to understand the user's situation, create the account and workspace, co-design metrics and time preferences, fund the markets, and wire auto-syncing; works for personal goals, startups, company teams, and workspaces governing AI agents alike), **workspace operator** (open a workspace, define KPIs, fund markets, approve or decline proposals, manage members, settings, announcements and sources), **discovery** (find public workspaces and read a workspace's brief, metrics, markets, proposals and history, with no key at all), and **participant** (register, join workspaces, browse markets, watch live prices, trade with a price guard, rest limit orders, provide liquidity, track positions and P&L, comment, submit and edit proposals, enter prize seasons, transfer credits, push per-cycle telemetry to `/admin`).
 
 ## Install
 
@@ -17,96 +14,73 @@ The skill covers four flows: **guided onboarding** (the user says "set up Telarc
 /plugin install telarchy@telarchy
 ```
 
-The first line subscribes you to this marketplace; the second installs the plugin. To pull updates later: `/plugin marketplace update`.
-
-The plugin contains one skill named `telarchy`. After install, just ask Claude things like *"use the telarchy skill to register an AI participant in workspace X"* or *"using telarchy, define a Weekly Revenue KPI in workspace Y"* and it will load the skill instructions and generate the right calls.
+The first line subscribes you to this marketplace; the second installs the plugin with all five skills. To pull updates later: `/plugin marketplace update`.
 
 ### Other agents (Anthropic SDK, OpenAI SDK, Cursor, Codex, etc.)
 
-The skill file follows the open [Agent Skills spec](https://agentskills.io). Drop `plugins/telarchy/skills/telarchy/SKILL.md` into your agent's skill loader, or include its contents in your system prompt.
+Every skill file follows the open [Agent Skills spec](https://agentskills.io) and works on its own. Drop the ones you need into your agent's skill loader, or include their contents in your system prompt. A trading bot needs only `telarchy-trading`; an agent helping an owner needs `telarchy-manage` and `telarchy-metric-design`.
 
 ```bash
 git clone https://github.com/Reblexis/telarchy-skill.git
-# Then point your agent at: telarchy-skill/plugins/telarchy/skills/telarchy/SKILL.md
+# Then point your agent at telarchy-skill/plugins/telarchy/skills/<skill>/SKILL.md
 ```
 
-For Cursor / Windsurf / similar editor agents, drop the file at `.cursor/rules/telarchy.md` (or your editor's rules path).
+## The skills
 
-## What the skill covers
+One plugin, `telarchy`, holds five skills. Each one is built around a job a user actually brings, not around a section of the API.
 
-The skill is deliberately bounded. It walks the agent through the flows that cover most real use, and points at the live `GET /api/help` endpoint for anything beyond. The full content is in [`plugins/telarchy/skills/telarchy/SKILL.md`](plugins/telarchy/skills/telarchy/SKILL.md).
+**`telarchy`** is the index. It says what Telarchy is, which of the four skills below does which job, and the basics every call shares (base URL, the three auth paths, `X-Workspace-Id`, how to search `GET /api/help`, the error codes to act on, feedback). It keeps the name `telarchy` because agents, guides and prompts already load it by that name (`/telarchy`, `plugins/telarchy/skills/telarchy/SKILL.md`), and it must route any of them to the right skill.
 
-**Guided onboarding** (section O): when the user pastes the telarchy.com landing prompt or says "set up Telarchy", the agent fetches the canonical server-side runbook (`GET /api/guides/onboarding`) and runs it end to end, shaping the workspace around the user's actual situation. Also covers picking up a setup someone started with Otto on telarchy.com/manage (`GET /api/setup/checklist`).
+**`telarchy-evaluate`** takes an idea and gets it priced. It finds the workspace whose metrics the idea would move (the user's own first), checks the ballot for a duplicate, writes the idea as a well-formed proposal (bounded, and where possible one that approval itself carries out), funds the books the argument is about, and posts it once the user has seen the exact title, description and cost. It then reports the link, the deadline and the priced impact per metric. When no workspace fits, it asks whether the user wants one, and on a yes hands over to `telarchy-manage` and `telarchy-metric-design`.
 
-**As a workspace operator** (section A):
-- Sign up and open a workspace from a template (the three-per-account cap, the unlisted-by-default rule, why a workspace without a horizon is not a market)
-- Define KPIs (single metrics or composite formulas, time preference, custom horizons, `resetsEvery`, `resolvesNaUntilMeasured`, `opensAt`) and what an edit may and may not change
-- Update metric values (the check-in or the sync) and how settlement fixes on the reading at `resolvesOn`
-- Create, fund, void and resolve markets
-- Approve (or choose one option of a multiple-choice proposal), decline, decline-as-spam, or remove proposals; read the negotiation thread
-- Manage members and permission groups (Public / Trader / Admin + custom, per-metric and per-source permissions)
-- Workspace settings (description, charter, about, position cap, proposal reward and spam penalty, auto-fund), announcements, plan entries (what you are going to do and by when, in your own words; the data room's "What is planned" tab; done or edited, never deleted), sources, activity and event feeds
-- Keys and scopes; creating bots you own
+**`telarchy-manage`** is the owner's side of the API: guided onboarding (`GET /api/guides/onboarding`), opening a workspace, putting metrics on it, keeping their readings true, funding markets, deciding proposals, members and permission groups, settings and charter, announcements, plans, sources, keys and bots the owner runs. It hands the choice of what to measure to `telarchy-metric-design`.
 
-**Discovery** (section D), all without a key:
-- List public workspaces, all public markets, featured markets, platform stats, the leaderboard
-- Read a workspace's brief (`GET /api/marketplace/<idOrSlug>/context?format=md`), public profile and ballot, announcements, comments, market activity and price history
-- Read the workspace's own metrics, readings, markets, trades, positions and proposals anonymously with just `X-Workspace-Id`
-- The data room's four tabs: the public actions log (`GET /api/data-room/actions`), what the owner has planned (`GET /api/data-room/planned`, entries the owner typed, open and done), the documentation (the guides) and the vision (`GET /api/data-room/vision`); and when Otto is and is not worth a call
+**`telarchy-metric-design`** decides what a workspace should measure, following Telarchy's own doctrine (the genie test, outcomes not activities, a metric is a commitment and a proposal is a hypothesis, objectively resolvable definitions, naming is machinery), and then encodes the result correctly: range, horizons and time preference, `resetsEvery`, formulas, settlement. It proposes; the owner decides, and nothing is created without an explicit yes.
 
-**As a participant** (section B):
-- Register and get an API key; join further workspaces
-- Start a cycle: dashboard, balance, positions, trade history, per-market P&L, open limit orders, leaderboard rank
-- Browse markets (status and kind filters, per-market context, trades, positions, comments)
-- Watch live prices once a second (`GET /api/marketplace/<idOrSlug>/prices` with `If-None-Match`, 304 when nothing moved)
-- Place trades (target value, directional, or sell) with a price guard (`limit`: fill only while the call stays on your side, `limited` when it stopped early, `price_moved` when nothing fitted), rest limit orders, provide liquidity
-- Comment on markets and proposals
-- Submit proposals (create conditional decision markets), including proposals with 2 to 6 options where the owner chooses one, fix a proposal you posted, withdraw
-- Enter prize seasons and claim a prize
-- Transfer credits, import a Manifold record, what credits are not
-- Notifications, inbox, event and activity feeds for pollers
-- Push heartbeats and decision traces to `/admin` via the open agent telemetry protocol
+**`telarchy-trading`** is everything a participant does with credits: find and read a floor (most of it without a key), get an identity and a bankroll, watch prices, trade with a price guard, rest limit orders, provide liquidity, trade a proposal's conditional books, comment and file forecasts, enter seasons, move credits, and push telemetry to `/admin`.
 
-**Feedback** (section C): report bugs, ask for help, suggest improvements via `POST /api/feedback`.
+## How the skills are written
 
-## Why a skill (instead of just curl)
-
-Telarchy has around 180 endpoints. Most agents flailing through `/api/help` would burn context reading the whole catalog. The skill gives the agent a four-flow mental model upfront, then teaches it to fetch the live docs only when it actually needs an endpoint outside that core set. Less context, fewer wrong calls.
+- **Live docs over copies.** The server's guides (`GET /api/guides/<section>`) and catalog (`GET /api/help`) are the source of truth and change weekly. A skill carries the workflow, the judgment, and only those mechanics an agent gets wrong without being told; for field-level detail it names the guide or the `/api/help` search that holds it. A fact copied into a skill is a fact that can go stale.
+- **Every endpoint a skill names exists.** Each `/api/...` path in a skill must match a route in the live `GET /api/help` catalog (the BetterAuth routes under `/api/auth/sign-*`, which the catalog does not list, are the only exception). The test suite checks it.
+- **Each skill stands alone.** Installed by itself, a skill can do its job: it carries the basics it needs rather than assuming another skill was loaded. When a job crosses into another skill's area, it names that skill.
+- **Public or spending acts wait for the user.** Posting a proposal, approving or declining one, and anything else that is public under the user's name or spends their credits is shown to the user in its exact form first.
+- **One version.** The plugin's version is written in the marketplace manifest, the plugin manifest and every skill's frontmatter, and they all agree.
+- A skill's `SKILL.md` stays under 500 lines; detail an agent reads only sometimes goes in that skill's `references/`.
 
 ## Repo layout
 
 ```
 .claude-plugin/
-  marketplace.json         the catalog Claude Code reads when you run /plugin marketplace add
-plugins/
-  telarchy/
-    .claude-plugin/
-      plugin.json          plugin manifest
-    skills/
-      telarchy/
-        SKILL.md           the agent-loadable instructions
+  marketplace.json          the catalog Claude Code reads when you run /plugin marketplace add
+plugins/telarchy/
+  .claude-plugin/plugin.json  plugin manifest
+  skills/
+    telarchy/SKILL.md               the index and the shared basics
+    telarchy-evaluate/SKILL.md      an idea, priced as a proposal
+    telarchy-manage/SKILL.md        the owner's side
+    telarchy-metric-design/SKILL.md what to measure, and how to encode it
+    telarchy-trading/SKILL.md       the participant's side
+    <skill>/references/             detail read only when needed
 examples/
-  register_and_trade.sh    end to end: register, check the balance, trade
-  push_telemetry.py        per-cycle heartbeat and trace
+  register_and_trade.sh     end to end: register, check the balance, trade
+  push_telemetry.py         per-cycle heartbeat and trace
 test/
-  run.sh                   the whole suite
-  version-consistency.sh   the version is in three files and they must agree
-LICENSE                    MIT
+  run.sh                    the whole suite
+  version-consistency.sh    every version field agrees
+  skill-structure.sh        each skill is well-formed and within size
+  endpoints-exist.sh        every /api path a skill names is in the live catalog
 ```
 
 ## Tests
 
-The product here is instructions, so the tests check whether the instructions
-are true: that the version agrees across all three files an installer reads,
-and that `examples/register_and_trade.sh` behaves correctly on both paths, the
-zero-credit registration and the funded one. It runs against a local stub, so
-it needs nothing but python3 and touches no live workspace.
+The product here is instructions, so the tests check whether the instructions are true: that every version field agrees, that each skill is well-formed (frontmatter `name` equals its directory, a description, a body under 500 lines, every `references/` file it points at exists, no em or en dashes), that every `/api/...` path any skill names is a route in the live catalog, and that `examples/register_and_trade.sh` behaves correctly on both paths, the zero-credit registration and the funded one, against a local stub.
 
 ```bash
 bash test/run.sh
 ```
 
-CI runs the same command on every push and pull request.
+`endpoints-exist.sh` fetches `https://telarchy.com/api/help` (override with `TELARCHY_HELP_URL`, or point `TELARCHY_HELP_FILE` at a saved copy). CI runs the whole suite on every push and pull request.
 
 ## Updating
 

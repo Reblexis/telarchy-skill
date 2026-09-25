@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.32.1
+version: 0.33.0
 description: |
   Start here for anything on Telarchy (telarchy.com), the approval layer for
   actions: an owner lists the metrics they value, anyone proposes actions,
@@ -11,6 +11,7 @@ description: |
   and where to report problems. Use it whenever the user mentions Telarchy, a
   Telarchy workspace or floor, telarchy.com, or pastes a Telarchy prompt, and
   then load telarchy-evaluate (price an idea as a proposal),
+  telarchy-propose (find the highest-return proposal to make),
   telarchy-manage (run a workspace as its owner), telarchy-metric-design
   (decide what to measure) or telarchy-trading (trade, register a bot,
   seasons, telemetry).
@@ -29,11 +30,12 @@ Telarchy is the approval layer for actions, for any agent, human or AI. An owner
 Pick by what the user wants done, then load that skill. They sit beside this one in the plugin (`plugins/telarchy/skills/<name>/SKILL.md` in https://github.com/Reblexis/telarchy-skill).
 
 - **"Is this idea worth doing?" / "put this on Telarchy" / "price this" / "propose X"**: `telarchy-evaluate`. It turns an idea into a proposal on the right workspace and reports what the market says.
+- **"What should we do next?" / "find the best proposal" / "highest ROI move for this floor" / "propose something that raises <metric>"**: `telarchy-propose`. It researches the floor and the subject, ranks candidate actions by expected return, and drafts the best one.
 - **"Set up Telarchy" / "create a workspace" / approve, decline, fund, members, settings, keys, sync the numbers**: `telarchy-manage`. The owner's side. A pasted prompt from telarchy.com that says "set up Telarchy" or "You are picking up a Telarchy setup" belongs here.
 - **"What should I measure?" / "is this a good metric?" / choosing or fixing a workspace's metrics**: `telarchy-metric-design`.
 - **Trade, forecast, build or run a bot, limit orders, liquidity, seasons, credits, telemetry to /admin**: `telarchy-trading`.
 
-A job often crosses two: evaluating an idea for someone with no workspace yet goes evaluate, then manage and metric-design, then back to evaluate.
+A job often crosses two: evaluating an idea for someone with no workspace yet goes evaluate, then manage and metric-design, then back to evaluate; propose drafts its winner and posts it through evaluate's steps.
 
 ## Basics every call shares
 

@@ -3,7 +3,7 @@
 # names, and every skill stays small enough to load whole.
 #
 # The rules come from README.md, "The skills" and "How the skills are written":
-# five skills, frontmatter name = directory, a description that says when to
+# six skills, frontmatter name = directory, a description that says when to
 # use it, a body under 500 lines, every references/ file it points at exists,
 # and no em or en dashes anywhere (owner rule: they read as machine-written).
 set -euo pipefail
@@ -12,7 +12,7 @@ python3 - "$ROOT" <<'PY'
 import os, re, sys
 root = sys.argv[1]
 skills_dir = os.path.join(root, 'plugins/telarchy/skills')
-expected = {'telarchy', 'telarchy-evaluate', 'telarchy-manage', 'telarchy-metric-design', 'telarchy-trading'}
+expected = {'telarchy', 'telarchy-evaluate', 'telarchy-propose', 'telarchy-manage', 'telarchy-metric-design', 'telarchy-trading'}
 fails = []
 present = {d for d in os.listdir(skills_dir) if os.path.isdir(os.path.join(skills_dir, d))}
 if present != expected:
@@ -42,6 +42,12 @@ for name in sorted(present & expected):
     for ref in set(re.findall(r'references/[A-Za-z0-9_.\-]+\.md', text)):
         if not os.path.exists(os.path.join(d, ref)):
             fails.append(f'{name}: points at {ref}, which does not exist')
+# The index routes to every skill: a skill the index never names is one an
+# agent that loaded /telarchy will not find.
+index = open(os.path.join(skills_dir, 'telarchy', 'SKILL.md')).read() if 'telarchy' in present else ''
+for name in sorted(expected - {'telarchy'}):
+    if f'`{name}`' not in index and f' {name} ' not in index and f'{name})' not in index:
+        fails.append(f'telarchy (index): never names {name}')
 # Facts the code enforces that a skill once got wrong. The seeded Admin group
 # holds read, trade and manage, never manage_workspace (telarchy-app
 # routes/groups.ts SYSTEM_GROUP_CAPABILITIES): a skill that says otherwise

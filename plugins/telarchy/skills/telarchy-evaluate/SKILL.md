@@ -1,6 +1,6 @@
 ---
 name: telarchy-evaluate
-version: 0.32.1
+version: 0.33.0
 description: |
   Take an idea, plan or decision and get it priced on Telarchy
   (telarchy.com): find the workspace whose metrics it would move (the
@@ -14,7 +14,8 @@ description: |
   "put this on Telarchy", "what would the market say about X", "should I do
   X", "propose X", "price this idea", or wants a decision, experiment, hire,
   spend or feature judged against their metrics, even if they do not name
-  Telarchy's proposal flow.
+  Telarchy's proposal flow. To find the best idea rather than price a given
+  one, use telarchy-propose.
 allowed-tools:
   - Bash
   - WebFetch

@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.32.1
+version: 0.33.0
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -38,7 +38,7 @@ When the user asks to set Telarchy up, or pastes the prompt from telarchy.com, f
 4. **Account, then workspace, then key** (section 2).
 5. **Put the metric on, with a horizon**, then **fund its books** (sections 3 and 4). A metric with no horizon opens no market; a market with no money refuses every trade.
 6. **Wire the number** (section 3), set permissions and what traders see (sections 6 and 7).
-7. **Optional kickstart, ask first:** read their project, propose the highest-impact moves as proposals (telarchy-evaluate), and hand back a ranked list.
+7. **Optional kickstart, ask first:** find the highest-return moves for the new floor with telarchy-propose, and hand back a ranked list; post only the ones they say yes to.
 8. **Hand off in writing:** the floor URL, what exists, where each key lives and what it can do, the sync plan, what waits for their decision, and their exits (`GET /api/auth/me/export`, `DELETE /api/workspaces/:id`, account deletion in the browser).
 
 Before they commit, fetch `GET /api/legal/terms` and `GET /api/legal/privacy` and summarise them. Never invent an email, a password or a metric value.

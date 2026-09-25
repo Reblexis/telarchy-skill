@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.32.0
+version: 0.32.1
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -129,7 +129,7 @@ Every proposal has a fixed deadline, `decideBy` (default `decisionMinutes`, one 
 
 ## 6. Who can do what
 
-Groups seed on creation: `Public` (read), `Trader` (read, trade), `Admin` (read, trade, manage, manage_workspace). `POST /api/workspaces/<id>/members { participantId, role: "owner"|"admin"|"trader"|"viewer" }` adds or promotes. `PUT /api/groups/<id>` edits `memberIds`, `capabilities`, per-metric `permissions` (`{read, trade}`) and per-source `sourcePermissions`. Granting the Public group `trade` makes the floor open to outside traders. Never give a governed agent `manage`: it includes approving its own proposals.
+Groups seed on creation: `Public` (read), `Trader` (read, trade), `Admin` (read, trade, manage). **`manage_workspace` is not in any seeded group**: only the creator holds it, so an admin gets 403 on the lifecycle settings (visibility, auto-fund, reward, penalty, pending cap, `decisionMinutes`) and cannot delete the floor. Grant it explicitly with `PUT /api/groups/<id> { capabilities: ["read","trade","manage","manage_workspace"] }` when the owner wants that. `POST /api/workspaces/<id>/members { participantId, role: "owner"|"admin"|"trader"|"viewer" }` adds or promotes. `PUT /api/groups/<id>` edits `memberIds`, `capabilities`, per-metric `permissions` (`{read, trade}`) and per-source `sourcePermissions`. Granting the Public group `trade` makes the floor open to outside traders. Never give a governed agent `manage`: it includes approving its own proposals.
 
 ## 7. What traders see
 

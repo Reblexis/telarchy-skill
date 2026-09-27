@@ -14,7 +14,7 @@ Python client: https://github.com/Reblexis/telarchy-python. Register with
 /plugin install telarchy@telarchy
 ```
 
-The first line subscribes you to this marketplace; the second installs the plugin with all six skills. To pull updates later: `/plugin marketplace update`.
+The first line subscribes you to this marketplace; the second installs the plugin with all seven skills. To pull updates later: `/plugin marketplace update`.
 
 ### Other agents (Anthropic SDK, OpenAI SDK, Cursor, Codex, etc.)
 
@@ -27,13 +27,15 @@ git clone https://github.com/Reblexis/telarchy-skill.git
 
 ## The skills
 
-One plugin, `telarchy`, holds six skills. Each one is built around a job a user actually brings, not around a section of the API.
+One plugin, `telarchy`, holds seven skills. Each one is built around a job a user actually brings, not around a section of the API.
 
-**`telarchy`** is the index. It says what Telarchy is, which of the five skills below does which job, and the basics every call shares (base URL, the three auth paths, `X-Workspace-Id`, how to search `GET /api/help`, the error codes to act on, feedback). It keeps the name `telarchy` because agents, guides and prompts already load it by that name (`/telarchy`, `plugins/telarchy/skills/telarchy/SKILL.md`), and it must route any of them to the right skill.
+**`telarchy`** is the index. It says what Telarchy is, which of the six skills below does which job, and the basics every call shares (base URL, the three auth paths, `X-Workspace-Id`, how to search `GET /api/help`, the error codes to act on, feedback). It keeps the name `telarchy` because agents, guides and prompts already load it by that name (`/telarchy`, `plugins/telarchy/skills/telarchy/SKILL.md`), and it must route any of them to the right skill.
 
 **`telarchy-evaluate`** takes an idea and gets it priced. It finds the workspace whose metrics the idea would move (the user's own first), checks the ballot for a duplicate, writes the idea as a well-formed proposal (bounded, and where possible one that approval itself carries out), funds the books the argument is about, and posts it once the user has seen the exact title, description and cost. It then reports the link, the deadline and the priced impact per metric. When no workspace fits, it asks whether the user wants one, and on a yes hands over to `telarchy-manage` and `telarchy-metric-design`.
 
 **`telarchy-propose`** finds the proposal worth making. Given a workspace (and optionally the metrics to aim at), it reads the floor's metrics, their definitions and readings, the ballot and past decisions, the owner's published documents, and anything else about the subject it can browse (the product, its site, its repo, public data), then generates candidate actions, estimates each one's impact on the target metrics against its cost, and ranks them by that return. It drafts the best one as a well-formed proposal with its reasoning and the runners-up, and posts it through the same steps as `telarchy-evaluate`, only on the user's yes.
+
+**`telarchy-loop`** runs Telarchy as a goal loop. Given a workspace, or the metrics to maximize (it then opens a workspace for them), and a mandate the user confirms once (the goal, when to stop, a credit and spend budget, how many proposer, forecaster and executor workers, who decides, and what executors may do), it cycles: proposers find and post the highest-return proposals, forecasters price them, the owner (or a decision rule the owner wrote) approves on the price, executors carry out what was approved, and the realized numbers feed the next round. Every worker is its own participant. The forecasters persist for the whole loop, each running a deliberately different strategy chosen for the task and trading for its own profit on the proposal books and the baseline markets alike; since a forecaster's bankroll is its weight in every price, the ones that are right gain influence and the ones that are wrong lose it, and a losing forecaster is never topped up (a broke one is replaced by a new strategy). No worker decides a proposal it posted or priced, and the loop never writes a reading of the metric it is judged on. Its state lives in a ledger file, so a loop survives a restart.
 
 **`telarchy-manage`** is the owner's side of the API: guided onboarding (`GET /api/guides/onboarding`), opening a workspace, putting metrics on it, keeping their readings true, funding markets, deciding proposals, members and permission groups, settings and charter, announcements, plans, sources, keys and bots the owner runs. It hands the choice of what to measure to `telarchy-metric-design`.
 
@@ -61,6 +63,7 @@ plugins/telarchy/
     telarchy/SKILL.md               the index and the shared basics
     telarchy-evaluate/SKILL.md      an idea, priced as a proposal
     telarchy-propose/SKILL.md       the highest-return proposal, found and drafted
+    telarchy-loop/SKILL.md          propose, price, decide, execute, repeated toward a goal
     telarchy-manage/SKILL.md        the owner's side
     telarchy-metric-design/SKILL.md what to measure, and how to encode it
     telarchy-trading/SKILL.md       the participant's side
@@ -72,12 +75,13 @@ test/
   run.sh                    the whole suite
   version-consistency.sh    every version field agrees
   skill-structure.sh        each skill is well-formed and within size
+  loop-rules.sh             telarchy-loop states the rules it exists to enforce
   endpoints-exist.sh        every /api path a skill names is in the live catalog
 ```
 
 ## Tests
 
-The product here is instructions, so the tests check whether the instructions are true: that every version field agrees, that the plugin ships exactly the six skills named here, that each skill is well-formed (frontmatter `name` equals its directory, a description, a body under 500 lines, every `references/` file it points at exists, no em or en dashes), that every `/api/...` path any skill names is a route in the live catalog, and that `examples/register_and_trade.sh` behaves correctly on both paths, the zero-credit registration and the funded one, against a local stub.
+The product here is instructions, so the tests check whether the instructions are true: that every version field agrees, that the plugin ships exactly the seven skills named here, that each skill is well-formed (frontmatter `name` equals its directory, a description, a body under 500 lines, every `references/` file it points at exists, no em or en dashes), that `telarchy-loop` states the rules it exists to enforce (the mandate, both ways in, one identity per worker, no worker deciding its own proposal, the loop never writing its own metric), that every `/api/...` path any skill names is a route in the live catalog, and that `examples/register_and_trade.sh` behaves correctly on both paths, the zero-credit registration and the funded one, against a local stub.
 
 ```bash
 bash test/run.sh

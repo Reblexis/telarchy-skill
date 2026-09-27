@@ -1,6 +1,6 @@
 ---
 name: telarchy-propose
-version: 0.33.0
+version: 0.34.0
 description: |
   Find and draft the highest-return proposal for a Telarchy (telarchy.com)
   workspace: read the floor's metrics, definitions, readings, ballot, past

@@ -18,8 +18,10 @@ except FileNotFoundError:
     print(f'FAIL: {p} does not exist'); sys.exit(1)
 low = ' '.join(t.lower().split())
 rules = {
-  'the mandate is confirmed once, before any call, and bounds everything after':
-    ['mandate', 'before any call'],
+  'the mandate is fixed and written to the ledger before any call':
+    ['mandate', 'before any call', 'ledger'],
+  'when the user said not to ask, the mandate is inferred and written down, not asked':
+    ['inferred', 'not to ask'],
   'both ways in: an existing workspace, or metrics to maximize (it opens a workspace)':
     ['given a workspace', 'given metrics', 'post /api/workspaces'],
   'the mandate names the stop condition, the budget and the worker counts':
@@ -50,6 +52,34 @@ rules = {
     ['bankroll is its weight', 'never topped up'],
   'actions that move the definition and not the goal are cut':
     ['gaming'],
+  # Unattended operation: the operator is away for hours (hackathon-game loop,
+  # 2026-09-27/28, docs/retro/telarchy-product-lessons.md in that repo).
+  'the orchestrator writes a heartbeat to the ledger every cycle':
+    ['heartbeat'],
+  'a resumed loop never re-posts proposals or re-creates workers':
+    ['never re-post', 're-create'],
+  'workers die mid-task: they commit early and the orchestrator finishes committed work instead of re-running it':
+    ['commit early', 'instead of re-running'],
+  'every API call has a timeout and retries':
+    ['timeout', 'retries'],
+  'a retried proposal post carries an Idempotency-Key':
+    ['idempotency-key'],
+  'evaluators start the moment a proposal is funded; no proposal lapses unpriced':
+    ['the moment a proposal is funded', 'lapses unpriced'],
+  'one merge path, and an integration step gives the owner one build':
+    ['one merge path', 'integration', 'one build'],
+  'cadence comes from the harness scheduler; a blocked self-restart watchdog is not routed around':
+    ['scheduler', 'watchdog'],
+  'the reading plan: who reads the metric and when, manual settlement or N/A for a person-reported metric':
+    ['reading plan', 'until-settled', 'resolvesnauntilmeasured', 'person'],
+  'a reading lands before any clock-settled date':
+    ['before any clock-settled date'],
+  'the credit bill is computed up front; ask for funding or choose smaller seeds and record the choice':
+    ['credit bill', 'ask for funding', 'smaller seeds', 'record the choice'],
+  'unattended default decision mode is a written numeric rule, since the owner is away':
+    ['unattended', 'owner is away'],
+  'the loop stops on its own and leaves a final report':
+    ['final report'],
 }
 fails = [name for name, needles in rules.items() if not all(n in low for n in needles)]
 for name in fails:

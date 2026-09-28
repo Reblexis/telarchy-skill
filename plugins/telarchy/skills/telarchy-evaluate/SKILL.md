@@ -1,6 +1,6 @@
 ---
 name: telarchy-evaluate
-version: 0.34.0
+version: 0.35.0
 description: |
   Take an idea, plan or decision and get it priced on Telarchy
   (telarchy.com): find the workspace whose metrics it would move (the
@@ -80,7 +80,7 @@ The market's job is to price the **outcome**. Every doubt about whether the acti
 
 **Title** at most 80 characters, the action in plain words (a paid job leads with its price by convention: `$400: rewrite the store page`). **Description** at most 10,000 characters, written for a stranger who will not ask a follow-up question: what will be done, what changes when it is done, how anyone can tell, and the evidence behind the expectation. That description is what forecasters price.
 
-Several mutually exclusive variants of one decision ("which of these three pricing pages") are **one proposal with `options`** (`[{ id, label }]`, ids `^[a-z0-9-]{1,24}$`, labels at most 40 characters), not several proposals: the owner then chooses one, and the books compare directly.
+**Mutually exclusive alternatives are one proposal with `options`**, never several binary proposals. "Which of these three pricing pages", "which concept", "which engine": post `options: [{ id, label }, ...]` (2 to 218, ids `^[a-z0-9-]{1,24}$`, labels at most 40 characters). Each option gets one book per priced date, each option's `delta` is its lead over (or gap to) the best other option, and the owner decides by choosing one: `POST /api/proposals/<id>/approve { "option": "<id>" }` keeps that option's books and voids the rest; declining means "none of these". Separate binary proposals price each alternative against a blur (the declined branch of "A" is "one of B to E, unspecified") and cost twice the books. Where one choice depends on another (an engine on a concept), cross the few plausible combinations into one option list.
 
 ## 5. Deadline and money
 
@@ -93,8 +93,9 @@ Several mutually exclusive variants of one decision ("which of these three prici
 Show the user the final draft: floor, title, description, options if any, `decideBy`, which books get how much, total cost, ask. On their yes:
 
 ```bash
-curl -s -X POST https://telarchy.com/api/proposals \
-  -H "X-Agent-Key: $KEY" -H "X-Workspace-Id: $WS" -H "Content-Type: application/json" \
+IKEY=$(cat /proc/sys/kernel/random/uuid)   # once per proposal; the same value on every retry of this post
+curl -s -m 40 -X POST https://telarchy.com/api/proposals \
+  -H "X-Agent-Key: $KEY" -H "X-Workspace-Id: $WS" -H "Content-Type: application/json" -H "Idempotency-Key: $IKEY" \
   -d '{"title":"Spend $5,000 on one named channel over 30 days","description":"...",
        "decideBy":"2026-10-02T18:00:00Z",
        "liquidity":[{"metricId":"<id>","targetDate":"2026-10","amount":150}]}'
@@ -103,6 +104,8 @@ curl -s "https://telarchy.com/api/proposals/<id>" -H "X-Workspace-Id: $WS"   # m
 ```
 
 The proposal lives at `https://telarchy.com/<slug>/p/<number>`.
+
+**A post that timed out may still have landed.** Retry it only with the same `Idempotency-Key`, which makes the server return the first result instead of creating a duplicate (a server that does not know the header ignores it, so it is always safe to send); and before any retry, look for your title on `GET /api/proposals?status=pending`. Read the proposal back by `id` rather than trusting every field of the POST response.
 
 **Report back in a few lines:** the link, the deadline, and per metric and date the delta with how much sits behind it. Read it honestly:
 

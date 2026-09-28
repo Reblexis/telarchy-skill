@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Single-plugin marketplace that distributes the Telarchy skills. Six skills for the Telarchy API: evaluate an idea as a priced proposal, find the highest-return proposal to make, run a workspace as its owner, design metrics by Telarchy's doctrine, and trade as a participant (limit orders, liquidity, seasons, telemetry), plus an index.",
-    "version": "0.34.0"
+    "version": "0.35.0"
   },
   "plugins": [
     {
       "name": "telarchy",
       "source": "./plugins/telarchy",
       "description": "Six skills for the Telarchy API: evaluate an idea as a priced proposal, find the highest-return proposal to make, run a workspace as its owner, design metrics by Telarchy's doctrine, and trade as a participant (limit orders, liquidity, seasons, telemetry), plus an index.",
-      "version": "0.34.0",
+      "version": "0.35.0",
       "author": {
         "name": "Reblexis"
       },

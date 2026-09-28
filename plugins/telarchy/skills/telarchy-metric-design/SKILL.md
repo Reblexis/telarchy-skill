@@ -1,13 +1,14 @@
 ---
 name: telarchy-metric-design
-version: 0.34.0
+version: 0.35.0
 description: |
   Decide what a Telarchy (telarchy.com) workspace should measure, following
   Telarchy's own doctrine, and encode it so the markets price the right
   thing: the genie test, outcomes not activities, a metric is a commitment
   and a proposal is a hypothesis, objectively resolvable definitions that
   read as settlement text, numbers a proposal can move but a trader cannot,
-  money and "net" naming, range, horizons and time preference, levels vs
+  money and "net" naming, range, one horizon by default, settlement
+  (machine-read on a clock, or person-reported and settled by hand), levels vs
   per-period numbers, formulas, N/A, and how to change or retire a metric
   without voiding people's positions. Use it whenever someone is choosing,
   reviewing, renaming, redefining or retiring metrics or KPIs on Telarchy,
@@ -55,7 +56,10 @@ For each metric, draft these and show them together:
 - **Description = the settlement text**: what is counted, where it comes from, at what moment, what is excluded (the owner's own purchases, money merely passing through, test accounts). Traders read this before pricing anything.
 - **Level or per-period**: on a public floor a metric is a level that exists at every instant (a trailing-30-day total, a count as of now), not "revenue this week". A private floor may use a number that restarts each period (`resetsEvery`).
 - **Range**: books run from 0 to `marketRangeMax` and settlement clamps at the top, so a metric that can reach 500,000 on a range of 1,000 pays every "higher" holder in full whatever happens. Percent gets 100; large currencies are tracked in thousands.
-- **Horizons**: which future dates get a market, matched to what the decisions affect and never finer than the data arrives (weekly data under daily markets settles a week of markets on one stale reading). Company floors read well on three dates (today, this week, next month); a game prices "until settled". A metric with no horizon opens no market.
+- **Horizons**: which future dates get a market, matched to what the decisions affect and never finer than the data arrives (weekly data under daily markets settles a week of markets on one stale reading). **Default to one horizon**: ask how many dates the owner actually decides on, and for one send `{"enabled": false, "customHorizons": ["<that date>"]}` with a `horizonTitles` entry for it. Turning the curve on (`enabled: true`, `density` 3 by default) while also naming `customHorizons` stacks markets: three sampled dates plus each custom one, and every proposal then opens a pair on each (a hackathon floor asked for one date and got five books this way). Add dates only when the owner decides on several (a company floor often reads today, this week and next month). A metric with no horizon opens no market.
+- **Settlement: who produces the reading, and when.** Ask before choosing a horizon.
+  - *Machine-read on a clock* (a sync from Stripe, analytics, a database): a dated horizon, with the sync pushing before each boundary.
+  - *Person-reported* (a rating, a judgment, a check-in someone has to remember): manual settlement. The horizon is `until-settled`, which the owner settles with `POST /api/metrics/:id/settle { value, reason }` once the reading exists, and the metric has `resolvesNaUntilMeasured: true` with no `value` in the create call, so any dated book voids and refunds rather than settling on a placeholder. A person-rated metric on a clock with a placeholder 0 once settled every book on that 0, 48 minutes before the rating arrived.
 - **Source and cadence**: where the reading comes from and how often it is pushed; a result that has no value until it happens gets N/A handling or `opensAt`, never an invented neutral reading. N/A is not zero.
 - **Liquidity**: what each book opens with (the 0.5-credit default is a trap: if a 5-credit trade moves consensus more than a fifth of the range, it is too thin).
 

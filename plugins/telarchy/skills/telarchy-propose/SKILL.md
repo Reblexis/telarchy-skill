@@ -1,6 +1,6 @@
 ---
 name: telarchy-propose
-version: 0.34.0
+version: 0.35.0
 description: |
   Find and draft the highest-return proposal for a Telarchy (telarchy.com)
   workspace: read the floor's metrics, definitions, readings, ballot, past
@@ -85,7 +85,7 @@ Compare the top gains with the metric's own noise (how much it moves week to wee
 
 ## 6. Draft the winner
 
-Take the top candidate and write it the way telarchy-evaluate says: bounded, ideally one where approval itself is the action, a title of at most 80 characters, and a description written for a stranger that carries your mechanism, evidence and estimate, since that is what forecasters price. If the top two or three are mutually exclusive ways of doing one thing, make them one proposal with `options` so the owner chooses between priced alternatives. Pick `decideBy` long enough for traders to see it (days, not hours) and before the dates the effect lands on, and seed only the books where the effect lands (`liquidity: [{ metricId, targetDate, amount }]`).
+Take the top candidate and write it the way telarchy-evaluate says: bounded, ideally one where approval itself is the action, a title of at most 80 characters, and a description written for a stranger that carries your mechanism, evidence and estimate, since that is what forecasters price. If the top two or three are mutually exclusive ways of doing one thing, they are **one proposal with `options`** (`options: [{ id, label }]`), never several binary proposals: each option gets its own book, the owner compares them on one page and decides with `POST /api/proposals/<id>/approve { "option": "<id>" }`, and a decline means "none of these". Separate binaries would each price one alternative against an unspecified mix of the others. Pick `decideBy` long enough for traders to see it (days, not hours) and before the dates the effect lands on, and seed only the books where the effect lands (`liquidity: [{ metricId, targetDate, amount }]`).
 
 ## 7. Present, then post on a yes
 
@@ -96,6 +96,6 @@ Give the user, briefly:
 - the runners-up, one line each with their numbers, and what was cut and why when it matters;
 - what the research could not establish.
 
-Post only on their yes, following telarchy-evaluate section 6, then report the link and read the market back honestly: a fresh pair reads 0 because nobody has priced it, not because it is worthless. Your estimate is a prior; once people trade, the market's number replaces it, and it is never presented as the market's view. If the user wants to put their own credits behind the estimate, that is trading (telarchy-trading, section 7), on their word.
+Post only on their yes, following telarchy-evaluate section 6: send an `Idempotency-Key` header (one fresh value per proposal, reused on any retry of that post, harmless where the server ignores it), and before a retry after a timeout check the ballot for your title so a slow first post is not doubled, then report the link and read the market back honestly: a fresh pair reads 0 because nobody has priced it, not because it is worthless. Your estimate is a prior; once people trade, the market's number replaces it, and it is never presented as the market's view. If the user wants to put their own credits behind the estimate, that is trading (telarchy-trading, section 7), on their word.
 
 One well-researched proposal beats several thin ones: every proposal costs the owner attention and the proposer credits, and a floor can charge a spam penalty. Post more than one only when the user asks for it.

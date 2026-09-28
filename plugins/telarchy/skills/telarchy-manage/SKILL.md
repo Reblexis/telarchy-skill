@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.34.0
+version: 0.35.0
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -36,7 +36,7 @@ When the user asks to set Telarchy up, or pastes the prompt from telarchy.com, f
 2. **Understand the situation**, inferring from the project you are in: what the floor governs, the number they would actually defend, who participates, where the real number comes from.
 3. **Choose the metric with them** using telarchy-metric-design. Start with one number that is true and traded rather than five that are stale.
 4. **Account, then workspace, then key** (section 2).
-5. **Put the metric on, with a horizon**, then **fund its books** (sections 3 and 4). A metric with no horizon opens no market; a market with no money refuses every trade.
+5. **Put the metric on, with a horizon**, then **fund its books** (sections 3 and 4). Ask who produces the reading and when, and choose settlement from that (section 3). A metric with no horizon opens no market; a market with no money refuses every trade.
 6. **Wire the number** (section 3), set permissions and what traders see (sections 6 and 7).
 7. **Optional kickstart, ask first:** find the highest-return moves for the new floor with telarchy-propose, and hand back a ranked list; post only the ones they say yes to.
 8. **Hand off in writing:** the floor URL, what exists, where each key lives and what it can do, the sync plan, what waits for their decision, and their exits (`GET /api/auth/me/export`, `DELETE /api/workspaces/:id`, account deletion in the browser).
@@ -77,8 +77,15 @@ Decide what to measure with telarchy-metric-design first; it also covers every f
 ```bash
 curl -s -X POST https://telarchy.com/api/metrics -H "X-Agent-Key: $KEY" -H "X-Workspace-Id: $WS" -H "Content-Type: application/json" \
   -d '{"name":"Monthly revenue (EUR)","description":"Net revenue recognised in the calendar month, read from Stripe on the 1st.",
-       "value":31200,"marketRangeMax":50000,"timePreference":{"enabled":true,"halfLife":0.5,"customHorizons":["+1m","2026-12-31"]}}'
+       "value":31200,"marketRangeMax":50000,"timePreference":{"enabled":false,"customHorizons":["2026-12"]}}'
 ```
+
+**One horizon by default.** Ask how many dates the owner decides on; for one, send `enabled: false` and a single `customHorizons` entry, as above. The curve (`enabled: true`, 3 sampled dates by default) combined with `customHorizons` stacks markets, three plus each custom date, and every proposal opens a pair on each.
+
+**Settlement follows who produces the reading.**
+
+- *Machine-read on a clock* (a sync): a dated horizon, and the sync pushes before each boundary (below).
+- *Person-reported* (a rating, a judgment, a manual check-in): manual settlement. Use the horizon `until-settled` (it trades until the owner calls `POST /api/metrics/:id/settle { value, reason }`) and create the metric with `resolvesNaUntilMeasured: true` and no `value`, so a period nobody rated voids and refunds instead of settling on a placeholder. If a placeholder reading already exists, push `{ "na": true }` before any dated boundary nobody can rate by.
 
 **Editing.** `name` and `description` change any time without touching a market (announce it if the settlement meaning changed). `formula` is refused (409) while any market on the metric has trades. `marketRangeMax` applies from now on: traded books keep the range they opened with, untraded ones respawn at the new range. `DELETE /api/metrics/:id` is refused while a traded market is open. Detail: `GET /api/guides/creating`.
 

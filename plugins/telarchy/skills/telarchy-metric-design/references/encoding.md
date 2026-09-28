@@ -38,7 +38,7 @@ Create leaves first and composites second (a formula names its parts).
 | `marketRangeMax` | `1000` | Books run 0..this. Settlement clamps at the top. Leaf only, positive. |
 | `timePreference` | `{ enabled: true, halfLife: 1 }` | Which dates open markets. Omitted means that default, so set it deliberately. `null` = no curve and no horizons (an evidence series). |
 | `resetsEvery` | `null` | `hour`, `day`, `week`, `month`, `year` when the number restarts each period. Changes only which readings the chart attributes to a period, never settlement. Null for a level. |
-| `resolvesNaUntilMeasured` | `false` | For a number that does not exist until an event (a valuation before a round): its markets void as N/A while it has no reading. The first reading ends that for good. |
+| `resolvesNaUntilMeasured` | `false` | For a number that does not exist until an event (a valuation before a round) or until a person reports it (a rating): its markets void as N/A while it has no reading at or before their instant. The first reading ends that for good, so send no placeholder `value` with it. |
 | `opensAt` | `null` | Leaf only, inside the range: where untraded books open instead of at the reading. For a number with no running reading (a game's score). Put it in the create call, or the first book opens at the wrong price. |
 | `liquidityCredits` | workspace default | What a new book on this metric opens with. `horizonCredits` overrides it per date. |
 | `settlementLagMinutes` | 0 | How long after a period the number is final (0 to 90 days). Markets opened afterwards settle that long after their period. |
@@ -58,7 +58,9 @@ There is no `target`, `granularity` or `unit`. A goal line is a market, not a fi
   - `until-settled`: no clock; trades until `POST /api/metrics/:id/settle`, then the next refresh opens a fresh one. Settling settles every open book on the metric, so give it a metric of its own or one whose dated books share the answer.
 - `horizonCredits[entry] = { book, proposal }`: what the metric's own book and each proposal branch open with on that date, paid by the owner. `proposal` defaults to 0, meaning proposers fund their own.
 - `horizonTitles[entry]`: at most 60 chars, the words the floor reads in place of the clock ("this attempt").
-- A company floor reads well on three dates: `+0d`, `+0w`, and next month as an absolute date. Never finer than the data cadence.
+- One date by default: `{ "enabled": false, "customHorizons": ["<date>"] }`. The curve on plus custom dates stacks books (density 3 sampled dates plus every custom one); count before combining them.
+- A person-reported number settles by hand: `customHorizons: ["until-settled"]` plus `resolvesNaUntilMeasured: true`, and the owner calls `settle` when the reading exists.
+- A company floor that decides on several dates reads well on three: `+0d`, `+0w`, and next month as an absolute date. Never finer than the data cadence.
 - A floor on minute horizons forces the refresh each minute: `POST /api/predictions/markets/refresh {"force": true}` with a manager key.
 
 ## Formulas

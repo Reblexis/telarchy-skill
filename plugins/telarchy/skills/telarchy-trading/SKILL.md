@@ -1,6 +1,6 @@
 ---
 name: telarchy-trading
-version: 0.34.0
+version: 0.35.0
 description: |
   Trade on Telarchy (telarchy.com) as a participant, by hand or as a bot:
   find a public workspace worth trading and read its brief (no key needed),

@@ -80,6 +80,38 @@ rules = {
     ['unattended', 'owner is away'],
   'the loop stops on its own and leaves a final report':
     ['final report'],
+  # Decentralized standing workers are the default (Viktor, 2026-09-30:
+  # "the agents should be decentralized not being laucnhed by you they should
+  # work decentrilzied on improvign the numbers").
+  'the default operating mode is decentralized standing workers, each launched once':
+    ['decentralized', 'default', 'launch each worker once', 'standing'],
+  'the orchestrator does not run cycles or choose what workers propose':
+    ['does not run cycles', 'does not choose what'],
+  'the owner\'s feedback goes verbatim into a shared brief every worker re-reads each pass':
+    ['brief', 'verbatim', 're-reads', 'every pass'],
+  'deliveries go to a shared deliveries log the orchestrator surfaces to the owner':
+    ['deliveries log', 'surface'],
+  'workers coordinate only through the floor and the shared files':
+    ['only through the floor and the shared files'],
+  'every worker keeps a status file so a fresh copy resumes after a crash':
+    ['status file', 'resumes'],
+  'a dead worker is restarted with the same prompt':
+    ['same prompt'],
+  'each worker runs until the stop condition, including a STOP file':
+    ['until the stop condition', 'stop file'],
+  'waits are short bounded loops because the harness may cap long waits':
+    ['bounded', 'cap'],
+  # Trailer Lab run, 2026-09-29/30.
+  'telarchy.com refuses trades on a private floor; preflight checks it':
+    ['workspace_not_public', 'public floor', 'self-hosted'],
+  'the approval bar is set relative to the metric\'s shape, not a fixed high bar':
+    ['running maximum', 'relative to the metric'],
+  'forecasters always record both branches when the rule counts distinct forecasters':
+    ['both branches', 'distinct forecasters'],
+  'the owner\'s current value is re-filed inside each clock-settled cell before it closes':
+    ['re-file', 'inside each'],
+  'large media never goes into git':
+    ['large media', 'git'],
 }
 fails = [name for name, needles in rules.items() if not all(n in low for n in needles)]
 for name in fails:

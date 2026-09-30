@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.35.0
+version: 0.36.0
 description: |
   Start here for anything on Telarchy (telarchy.com), the approval layer for
   actions: an owner lists the metrics they value, anyone proposes actions,
@@ -13,7 +13,7 @@ description: |
   then load telarchy-evaluate (price an idea as a proposal),
   telarchy-propose (find the highest-return proposal to make),
   telarchy-loop (propose, price, decide and execute repeatedly toward a
-  goal with a team of worker agents),
+  goal with decentralized standing worker agents),
   telarchy-manage (run a workspace as its owner), telarchy-metric-design
   (decide what to measure) or telarchy-trading (trade, register a bot,
   seasons, telemetry).
@@ -33,7 +33,7 @@ Pick by what the user wants done, then load that skill. They sit beside this one
 
 - **"Is this idea worth doing?" / "put this on Telarchy" / "price this" / "propose X"**: `telarchy-evaluate`. It turns an idea into a proposal on the right workspace and reports what the market says.
 - **"What should we do next?" / "find the best proposal" / "highest ROI move for this floor" / "propose something that raises <metric>"**: `telarchy-propose`. It researches the floor and the subject, ranks candidate actions by expected return, and drafts the best one.
-- **"Run a loop on my floor" / "keep proposing and doing whatever raises <metric>" / "use Telarchy to reach <goal>" / agents that propose, forecast and execute**: `telarchy-loop`. Given a workspace or the metrics to maximize, it runs proposers, persistent forecasters and executors in cycles, unattended for hours if asked, under a mandate written to its ledger (inferred when the user said not to ask).
+- **"Run a loop on my floor" / "keep proposing and doing whatever raises <metric>" / "use Telarchy to reach <goal>" / agents that propose, forecast and execute**: `telarchy-loop`. Given a workspace or the metrics to maximize, it launches decentralized standing workers (makers, persistent forecasters, a decider) once, and each works on its own toward the goal until the stop condition, unattended for hours if asked, under a mandate written to its ledger (inferred when the user said not to ask).
 - **"Set up Telarchy" / "create a workspace" / approve, decline, fund, members, settings, keys, sync the numbers**: `telarchy-manage`. The owner's side. A pasted prompt from telarchy.com that says "set up Telarchy" or "You are picking up a Telarchy setup" belongs here.
 - **"What should I measure?" / "is this a good metric?" / choosing or fixing a workspace's metrics**: `telarchy-metric-design`.
 - **Trade, forecast, build or run a bot, limit orders, liquidity, seasons, credits, telemetry to /admin**: `telarchy-trading`.

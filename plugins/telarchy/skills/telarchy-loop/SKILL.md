@@ -1,21 +1,22 @@
 ---
 name: telarchy-loop
-version: 0.36.0
+version: 0.37.0
 description: |
   Run Telarchy (telarchy.com) as an unattended goal loop of decentralized
-  standing worker agents while the owner is away for hours. Given a
-  workspace, or the metrics to maximize (it then opens one), and a mandate
-  written to a ledger (inferred when the user said not to ask), the
-  orchestrator writes the shared documents (a brief with the owner's
-  feedback verbatim, the ledger, a deliveries log), sets up floor,
-  identities and funding, and launches each worker once. Each worker then
-  runs its own loop until the stop condition: makers propose and build what
-  is approved, persistent forecasters price and reprice, a standing decider
-  applies the written rule (or the owner decides). Workers coordinate only
-  through the floor and shared files and resume from status files after a
-  crash. Use it for "/telarchy-loop", "run a loop on my floor", "keep
-  building whatever raises <metric>", "work on it for the next N hours", or
-  "spin up agents to propose, forecast and execute".
+  standing workers while the owner is away for hours. Given a
+  workspace or the metrics to maximize (it then opens one) and a mandate in
+  a ledger (inferred when the user said not to ask), the orchestrator writes
+  the shared documents (a brief with the owner's feedback verbatim, the
+  ledger, a deliveries log) in one shared repo, sets up floor, identities
+  and funding, launches each worker once. Each worker then runs its own
+  loop until the stop condition: makers propose and build what is approved,
+  persistent forecasters price and reprice, a standing decider applies the
+  written rule (or the owner decides). Every worker is a separate economic
+  entity scored by its credit balance; they coordinate only through the
+  floor and shared files and resume from status files after a crash. Use it
+  for "/telarchy-loop", "run a loop on my floor", "keep building whatever
+  raises <metric>", "work on it for N hours", or "spin up agents to
+  propose, forecast and build".
 allowed-tools:
   - Bash
   - WebFetch
@@ -43,6 +44,8 @@ Items:
 - **Goal and stop.** The number and date that mean done; stop at the goal, a stop time (leave room before the metric's deadline for a final delivery), the budget spent, a `STOP` file in the loop directory, or the user saying stop. Every worker checks the same stop condition on every pass, so all of them end on their own.
 - **Workers.** How many makers, forecasters and deciders (default 2 makers, 3 forecasters, 1 decider in `rule` mode; a maker is the proposer and the executor of its own proposals), and the pending pool: how many proposals may be open at once.
 - **Who decides.** `owner`: the user approves on the price. `rule`: a numeric rule the standing decider applies ("approve when the delta on <metric> at <date> is at least X and at least N distinct forecasters traded it; decide once M have traded or at `decideBy`; otherwise decline with the numbers"). **Unattended, the default is `rule`**: the owner is away, so `owner` mode would let every proposal lapse. `owner` stays the default when the user is present to decide. Set the bar **relative to the metric's shape**, not at a fixed high number (section 6).
+- **Repo.** The **one shared repo** of the loop (section 3): all workers of one loop work in it, not each in its own project.
+- **Incentives** (section 2): the floor's `proposalReward`, the bonus rule and its size.
 - **Execution scope.** Which repos, tools and channels makers may touch, and what always comes back to the user: anything irreversible, public under their name beyond the proposals, contacting people, money.
 - **Delivery path** (section 9), **reading plan** (section 5) and **credit bill** (section 7): each one line in the mandate.
 
@@ -54,17 +57,24 @@ Items:
 2. Set up the floor, the identities and their funding (section 4), and run the preflight (section 8).
 3. Write one prompt file per role and **launch each worker once** as a standing agent that runs until the stop condition.
 4. Relay: put the owner's feedback into the brief, verbatim, and the owner's readings onto the floor on their instruction (section 5).
-5. Surface deliveries to the owner from the deliveries log: what to try, where it runs.
+5. Surface deliveries to the owner from the deliveries log: what to try, where it runs; pay the bonus when the owner's reading earns one.
 6. Restart a worker that died, with the **same prompt**; it resumes from its status file.
 7. Stop everything at the stop condition (write the `STOP` file) and write the final report (section 12).
 
 The orchestrator **does not run cycles**, **does not choose what** any worker proposes or builds, and does not trigger pricing, deciding or building. If it has an idea, it writes the idea into the brief like any other input, and the workers weigh it.
 
+**Every worker is a separate economic entity** with a "profit" incentive, and its **score is its credit balance** on the floor. Write the incentives into the brief so every worker sees them:
+
+- A maker whose proposal is approved receives the floor's `proposalReward` from the owner **on approval** (the server pays it on approve; set it in preflight with `PUT /api/workspaces/<id>/settings { proposalReward }` and put it in the credit bill).
+- A maker whose delivery the owner's reading shows moved the goal metric (for a running maximum, a **new best**) receives an **owner-funded** **bonus** of the size in the mandate: the orchestrator sends it from the owner's account (`POST /api/agents/transfer`) when it relays that reading, and records it in the ledger.
+- Anyone may trade on any proposal and the baseline books, except a proposal they **drafted or will build**.
+- Forecasters profit **only from being right**. The orchestrator never tops up a loser.
+
 **Workers** coordinate **only through the floor and the shared files**: the ballot, the books, proposal messages, the brief, the ledger and the deliveries log. No worker waits on an instruction from the orchestrator or from another worker.
 
 ## 3. The shared documents
 
-All in one loop directory, committed and pushed after every change, no keys and **no large media** (section 10).
+**One shared repo holds the loop**: the shared documents (under `loop/`), the shared tools (the helper script, prompts, checks) and all the work. Each maker works on its **own branch** in its **own worktree** of that repo (`git worktree add <dir> -b <maker>/p<N> origin/main`) and merges approved, delivered work into its main, so later makers reuse and improve what earlier ones built. The brief and the ledger are committed on main; files that change every pass (status files, the deliveries log) and all large media live in one shared directory **outside git**, named in the brief. No keys anywhere in the repo and **no large media** in git (section 10).
 
 - **Brief** (`brief.md`). The mandate, the goal, the owner's feedback **verbatim** with its date ("2026-09-30, Viktor: ..."), newest first, and the orchestrator's notes. Every worker **re-reads it every pass**, so feedback reaches the whole team within one pass without anyone being relaunched.
 - **Ledger** (`telarchy-loop-<slug>.md`). Mandate; resume line (the prompt that relaunches any role); workers (role, agentId, strategy, status file); proposals (number, id, poster, `decideBy`, delta, distinct forecasters and how many are outside the loop, decision with its numbers, builder, branch, state); readings (time, value, who gave it, which delivery); budget (the bill, the choice made, spent); incidents; changes to the rule, each dated with its reason. Workers append their own rows; the orchestrator never rewrites them.
@@ -83,7 +93,7 @@ Every worker is its own participant, created funded by the owner's key: `POST /a
 
 | Role | Scopes | Credits | Runs |
 |---|---|---|---|
-| maker | `workspace:read`, `workspace:trade` | its seeding share | proposes, builds its own approved proposals, logs deliveries; never trades its own |
+| maker | `workspace:read`, `workspace:trade` | its seeding share | proposes, builds its own approved proposals, logs deliveries; trades any proposal it did not draft and will not build |
 | forecaster | `workspace:read`, `workspace:trade` | a bankroll, once | prices and reprices proposal and baseline books for its own profit |
 | decider (`rule`) | the owner's key | none | applies the written rule to every pending proposal |
 
@@ -110,7 +120,7 @@ A number the owner states ("5 and 3") may be pushed on their instruction, attrib
 
 ## 7. Credit bill: compute up front, then choose
 
-bill = proposals over the run x priced dates per proposal x books per date (2, or the option count) x seed per book + forecasters x bankroll + baseline book funding.
+bill = proposals over the run x priced dates per proposal x books per date (2, or the option count) x seed per book + forecasters x bankroll + baseline book funding + expected approvals x `proposalReward` + expected bonuses x bonus size. An approve the owner's balance cannot pay the reward for answers 409, so keep the reward inside the bill.
 
 Read the owner's balance (`GET /api/agents/me/balance`) and compare. If it does not cover the bill:
 
@@ -125,6 +135,8 @@ Never top up a losing forecaster from the budget (section 11). Makers check thei
 - [ ] The floor can trade: public on telarchy.com, or a self-hosted instance (section 4); one test trade went through.
 - [ ] Reading plan checked (section 5): who reads the metric, when, and how it settles.
 - [ ] Decision rule set relative to the metric (section 6).
+- [ ] The shared repo exists with `loop/` (brief, ledger, prompts, tools) and the media directory outside git (section 3).
+- [ ] `proposalReward` set on the floor and the bonus rule written into the brief (section 2).
 - [ ] Credit bill computed and the funding choice recorded (section 7).
 - [ ] Helper script in place with timeouts, retries and idempotency keys (section 10, `references/helper.md`).
 - [ ] Worker identities created and funded (section 4), keys in a secret file outside the repo.
@@ -141,9 +153,10 @@ Every worker runs the same outer loop until the stop condition: **read the stop 
 **Maker** (proposes and builds):
 
 1. If it has **no proposal pending** and none of its approved proposals is still being built, run telarchy-propose with the brief's feedback and a driver no other pending proposal covers, and post one proposal (telarchy-evaluate sections 4 to 6): bounded, `decideBy` per section 6, seeded from its share of the bill, never priced by itself. Mutually exclusive alternatives are one proposal with `options`, never several binary ones.
-2. When its proposal is **approved**, build it: its own worktree and branch, tests first, inside the execution scope, **commit early** and push after each passing step, progress on `POST /api/proposals/<id>/messages`. The commitment goes on the floor's plans (`POST /api/workspaces/<id>/plans`, done with `PUT /api/workspaces/<id>/plans/<planId>`).
+2. When its proposal is **approved**, build it: its own worktree and branch of the shared repo, reusing and improving what is already there, tests first, inside the execution scope, **commit early** and push after each passing step, progress on `POST /api/proposals/<id>/messages`. The commitment goes on the floor's plans (`POST /api/workspaces/<id>/plans`, done with `PUT /api/workspaces/<id>/plans/<planId>`).
 3. Ship through the **one merge path** chosen in preflight (direct rebase onto `main` where pushes are allowed, otherwise a PR per branch; a refused push to `main` is the enforcement, not an obstacle), then append a line to the **deliveries log** so the owner has one current build to try. When several approved branches must be tried together, the maker that finishes last rebases onto the others and runs the whole test suite (the **integration** step), so there is always **one build**.
 4. When its proposal is declined or lapses, read why, and propose again on the next pass.
+5. Otherwise, trade other makers' pending proposals and the baseline books where it believes the price is wrong (never one it drafted or will build), then wait.
 
 **Forecaster** (prices, for its own profit):
 
@@ -168,7 +181,7 @@ Every worker runs the same outer loop until the stop condition: **read the stop 
 **Forecasters** persist for the whole loop: the same identities price every proposal, so their record means something. Each maximizes its own profit on proposal books and the floor's baseline markets alike. Their strategies are diverse and chosen for the task, written into each `bio` and the ledger: different information or a different model, not persona prompts on one model (a base-rate reader, a driver modeler, someone who plays or uses the current build before trading, a skeptic of delivery risk, a liquidity provider, a non-Claude model whose estimates are placed under that forecaster's own identity). **The bankroll is its weight:** a loser is never topped up; one below a tenth of its start is retired and, budget allowing, replaced with a strategy the loop lacks.
 
 - **The mandate bounds everything.** Nothing outside it without asking.
-- **No worker decides a proposal it posted or priced**, and a forecaster **never prices a proposal it drafted**. Makers never trade their own proposals.
+- **No worker decides a proposal it posted or priced**, and a forecaster **never prices a proposal it drafted**. Nobody trades a proposal they drafted or will build.
 - **The loop never writes a reading of the metric it is judged on** (beyond pushing the owner's own stated number on their instruction), never settles or voids its markets, and never edits a definition it did not create.
 - **Label self-priced deltas honestly.** When no outside trader priced a pair, it is the loop's own estimate, not a market's: say "priced only by the loop's forecasters" in the ledger and every report.
 - **No gaming.** An action that moves the number without the goal behind it is cut, even when the market would pay for it (telarchy-propose section 4).

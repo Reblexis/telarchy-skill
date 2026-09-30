@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.36.0
+version: 0.37.0
 description: |
   Start here for anything on Telarchy (telarchy.com), the approval layer for
   actions: an owner lists the metrics they value, anyone proposes actions,

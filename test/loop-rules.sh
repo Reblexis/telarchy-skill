@@ -112,6 +112,22 @@ rules = {
     ['re-file', 'inside each'],
   'large media never goes into git':
     ['large media', 'git'],
+  # One repo, workers as economic entities (Viktor, 2026-09-30: "they should
+  # work inside one repo preferably though as part of the telarchy loop not
+  # each their own project.. the agents hosuld work as separate entities each
+  # witha \"profit\" incentive").
+  'all workers of one loop work in one shared repo, each maker on its own branch and worktree':
+    ['one shared repo', 'own branch', 'worktree'],
+  'every worker is a separate economic entity whose score is its credit balance':
+    ['separate economic entity', 'score is its credit balance'],
+  'makers earn the floor proposalReward on approval, set in preflight and in the credit bill':
+    ['proposalreward', 'on approval', 'credit bill'],
+  'makers earn an owner-funded bonus when the reading shows their delivery moved the goal':
+    ['bonus', 'owner-funded', 'new best'],
+  'anyone may trade any proposal except one they drafted or will build':
+    ['drafted or will build'],
+  'forecasters profit only from being right':
+    ['only from being right'],
 }
 fails = [name for name, needles in rules.items() if not all(n in low for n in needles)]
 for name in fails:

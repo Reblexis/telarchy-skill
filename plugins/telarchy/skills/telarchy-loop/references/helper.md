@@ -8,7 +8,7 @@ Every worker calls the floor through one script, so call syntax is written once 
 - **Timeout and retries on every call**: a hard timeout (40 s), up to 4 retries with a delay, on network errors and 5xx alike. The hackathon run saw curl exits 28, 35 and 56 and calls over 120 s.
 - **Idempotency on every POST that creates something**: an `Idempotency-Key` generated once per logical action and reused on its retries (curl's `--retry` resends the same headers; set `TL_IKEY` to reuse one across manual re-runs). Trades honor it; on `POST /api/proposals` it is harmless if the server ignores it, so `post` also checks the ballot for the same poster and title before a manual re-post.
 - **Keys by worker name** from a secret directory outside the repo (`~/.telarchy/bot-<name>.json` holding `apiKey`), never in the ledger or a committed file.
-- **Compact JSON out**, one line per result, with `error` and `code` passed through, so the orchestrator can parse it.
+- **Compact JSON out**, one line per result, with `error` and `code` passed through, so the calling worker can parse it.
 - **Floor constants in the environment**: `TL_WS` (workspace id), `TL_MID` (the goal metric id), `TL_DATE` (the one priced date, or `until-settled`).
 
 ## Minimal script

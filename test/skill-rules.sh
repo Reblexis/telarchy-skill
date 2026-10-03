@@ -36,6 +36,8 @@ rules = [
   # has 30 days from settlement to add one.
   ('telarchy-trading', 'season winners do nothing to be paid: payout method on the account, 30 days to add one',
      ['nothing to be paid', 'payoutmethod', 'payby', '30 days']),
+  ('telarchy-trading', "a bot without a payout method of its own is paid to its owner's (2026-10-03)",
+     ["paid to its owner's"]),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
 # The retired claim step must not be taught anywhere.

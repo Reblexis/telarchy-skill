@@ -102,8 +102,8 @@ rules = {
   'waits are short bounded loops because the harness may cap long waits':
     ['bounded', 'cap'],
   # Trailer Lab run, 2026-09-29/30.
-  'telarchy.com refuses trades on a private floor; preflight checks it':
-    ['workspace_not_public', 'public floor', 'self-hosted'],
+  'a private floor trades only for workers in its Trader group, and never counts; preflight checks it':
+    ['private floor', 'trader group', 'not_authorized', 'never counts'],
   'the approval bar is set relative to the metric\'s shape, not a fixed high bar':
     ['running maximum', 'relative to the metric'],
   'forecasters always record both branches when the rule counts distinct forecasters':

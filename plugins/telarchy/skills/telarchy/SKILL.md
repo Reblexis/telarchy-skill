@@ -1,19 +1,19 @@
 ---
 name: telarchy
-version: 0.37.1
+version: 0.38.0
 description: |
   Start here for anything on Telarchy (telarchy.com), the approval layer for
   actions: an owner lists the metrics they value, anyone proposes actions,
   conditional markets price each proposal's impact on those metrics, and the
   owner approves on the price. This index says which Telarchy skill does which
-  job and carries the basics every call shares: base URL, the three auth
-  paths, X-Workspace-Id, searching GET /api/help, the error codes to act on,
-  and where to report problems. Use it whenever the user mentions Telarchy, a
+  job and carries the basics every call shares (base URL, auth,
+  X-Workspace-Id, GET /api/help, error codes, feedback). Use it whenever the user mentions Telarchy, a
   Telarchy workspace or floor, telarchy.com, or pastes a Telarchy prompt, and
   then load telarchy-evaluate (price an idea as a proposal),
   telarchy-propose (find the highest-return proposal to make),
-  telarchy-loop (propose, price, decide and execute repeatedly toward a
-  goal with decentralized standing worker agents),
+  telarchy-session (attended: the user's metrics, the best actions for
+  them, priced and decided), telarchy-loop (the same, unattended, with
+  decentralized standing worker agents),
   telarchy-manage (run a workspace as its owner), telarchy-metric-design
   (decide what to measure) or telarchy-trading (trade, register a bot,
   seasons, telemetry).
@@ -34,6 +34,7 @@ Pick by what the user wants done, then load that skill. They sit beside this one
 - **"Is this idea worth doing?" / "put this on Telarchy" / "price this" / "propose X"**: `telarchy-evaluate`. It turns an idea into a proposal on the right workspace and reports what the market says.
 - **"What should we do next?" / "find the best proposal" / "highest ROI move for this floor" / "propose something that raises <metric>"**: `telarchy-propose`. It researches the floor and the subject, ranks candidate actions by expected return, and drafts the best one.
 - **"Run a loop on my floor" / "keep proposing and doing whatever raises <metric>" / "use Telarchy to reach <goal>" / agents that propose, forecast and execute**: `telarchy-loop`. Given a workspace or the metrics to maximize, it launches decentralized standing workers (makers, persistent forecasters, a decider) once, and each works on its own toward the goal until the stop condition, unattended for hours if asked, under a mandate written to its ledger (inferred when the user said not to ask).
+- **"/telarchy-session" / "let's work on my metrics" / "find the best moves for <metric> and put them up", with the user present**: `telarchy-session`. It opens with the user naming the metrics to improve this session, finds them on a workspace or opens a new one, then in rounds ranks the highest-return actions by the user's preferences, posts the ones they pick, and leaves each decision to them on its price. It composes metric-design, manage, propose and evaluate; telarchy-loop is its unattended counterpart.
 - **"Set up Telarchy" / "create a workspace" / approve, decline, fund, members, settings, keys, sync the numbers**: `telarchy-manage`. The owner's side. A pasted prompt from telarchy.com that says "set up Telarchy" or "You are picking up a Telarchy setup" belongs here.
 - **"What should I measure?" / "is this a good metric?" / choosing or fixing a workspace's metrics**: `telarchy-metric-design`.
 - **Trade, forecast, build or run a bot, limit orders, liquidity, seasons, credits, telemetry to /admin**: `telarchy-trading`.

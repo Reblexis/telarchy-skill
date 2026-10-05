@@ -3,7 +3,7 @@
 # names, and every skill stays small enough to load whole.
 #
 # The rules come from README.md, "The skills" and "How the skills are written":
-# seven skills, frontmatter name = directory, a description that says when to
+# eight skills, frontmatter name = directory, a description that says when to
 # use it, a body under 500 lines, every references/ file it points at exists,
 # and no em or en dashes anywhere (owner rule: they read as machine-written).
 set -euo pipefail
@@ -12,7 +12,7 @@ python3 - "$ROOT" <<'PY'
 import os, re, sys
 root = sys.argv[1]
 skills_dir = os.path.join(root, 'plugins/telarchy/skills')
-expected = {'telarchy', 'telarchy-evaluate', 'telarchy-propose', 'telarchy-loop', 'telarchy-manage', 'telarchy-metric-design', 'telarchy-trading'}
+expected = {'telarchy', 'telarchy-evaluate', 'telarchy-propose', 'telarchy-loop', 'telarchy-session', 'telarchy-manage', 'telarchy-metric-design', 'telarchy-trading'}
 fails = []
 present = {d for d in os.listdir(skills_dir) if os.path.isdir(os.path.join(skills_dir, d))}
 if present != expected:

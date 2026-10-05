@@ -36,7 +36,7 @@ rules = [
   ("the user's preferences are fixed: weights, budget, what is off limits, when the effect must show",
      low, ['weights', 'budget', 'off limits']),
   ('the floor must be able to price: funded books covering the effect, and a floor that trades',
-     low, ['funded', 'periodendson', 'workspace_not_public', 'publish']),
+     low, ['funded', 'periodendson', 'not_authorized', 'publish', 'trader group']),
   ("candidates are ranked by return weighted by the user's preferences, through telarchy-propose",
      low, ['telarchy-propose', 'weighted', 'return']),
   ('the user picks from a ranked shortlist',

@@ -11,7 +11,8 @@ description: |
   finds the highest-return actions for those metrics, posts the ones the
   user picks as proposals, has the markets price them, and leaves each
   decision to the user on its price. A continuation proposal each round
-  has the market price stopping now versus continuing, shown in aoe.
+  has the market price stopping now versus continuing, shown in aoe; a
+  hook can start it attached to any new aoe session.
   Use it for "/telarchy-session",
   "start a Telarchy session", "let's work on my metrics", "find the best
   moves for <metric> and put them up", or "help me improve <metric> with
@@ -95,6 +96,7 @@ The session is itself an action: another round costs the user's time and credits
 - **Only the market prices it.** The prediction is only the market's price, never the agent's estimate, and nothing else is ever shown as it. Until someone trades it reads **unpriced**, not "no difference". The session never trades the continuation market, with its own key or through forecasters it funds: an agent that wants to keep running is the last one who should price whether it should. The user and anyone else on the floor may trade it. On a floor nobody else can trade yet (not public, and no forecasters in its Trader group), say plainly that the prediction stays unpriced until it does.
 - **Deciding it.** The user's word to continue or stop is the decision on the continuation proposal. At each round's end, before asking whether to go on, read its price and give one line per metric: stopped now against continued, the delta, its depth and how many traded; recommend from the weighted delta against the round's cost. On "continue", approve it (telarchy-manage, section 5) and run the next round; on "stop", decline it with the reason "session stopped" and close (section 6). One that lapses at `decideBy` refunds; if the session goes on, post a fresh one.
 - **Shown in aoe.** When `$AOE_INSTANCE_ID` is set the session runs inside aoe (Agent of Empires): after posting the continuation proposal and every time it reads its price, write the card with `aoe session forecast set` (JSON on stdin; the contract is aoe's `docs/guides/session-forecast.md`): `verdict` is `continue` when the weighted delta is above zero, `stop` when below, `unpriced` while nobody has traded; `headline` is the weighted delta in at most 32 characters ("+150 EUR revenue"); one `metrics` row per session metric and date with `stopped` (the declined price), `continued` (the approved price), `unit`, `traders` and `depth`; `note` is the next round's plan; `source` the proposal's link; `decide_by` its deadline. Without `$AOE_INSTANCE_ID`, skip it; if the command fails, say so once and go on. On close, write the final card (`stop`, headline "session stopped").
+- **Forecast overview after every reply.** While the session is running (or tied, section 7), every reply ends with a forecast overview of at most four lines, from prices re-read in that turn: the continuation proposal per metric (stopped now against continued, the delta, depth and traders, or "unpriced"), then each other open session proposal's delta in one line, with its `decideBy`. Before the first continuation proposal exists, say "no continuation proposal yet" in one line. Refresh the aoe card in the same turn, so the band never shows an older price than the reply.
 
 ## 6. Close the session
 
@@ -108,3 +110,15 @@ End when the user says so, or when the budget for the session is spent. Report i
 - credits spent this session.
 
 If the user wants the work to go on without them, offer telarchy-loop: it takes this session's floor, metrics and preferences as its mandate.
+
+## 7. Attached to an aoe session
+
+The session can also start **attached** to another task: a hook runs this skill after the first prompt of every new aoe session, whatever that prompt asks. Attached, the session does not take over the task. The agent does what the user asked; this skill only ties the session to a workspace and, once tied, keeps the continuation market (section 5) and the forecast overview going beside the work.
+
+**Ties log.** Ties are remembered in a ties log, one JSON line per session, at `$TELARCHY_SESSION_TIES` (default `~/.config/telarchy/session-ties.jsonl`): `{"at", "aoe_instance_id", "cwd", "title", "prompt" (its first 200 characters), "guess", "workspace" (slug, or null for none), "metrics", "weights", "continuation_seed"}`. The last line for an `aoe_instance_id` is its tie.
+
+**The guess.** Read the ties log and guess the workspace from past ties: the same repo or working directory first, then the aoe title (`aoe session show "$AOE_INSTANCE_ID"`), then the prompt's words against the user's workspaces' names and metrics (`GET /api/workspaces`, `GET /api/metrics`). Most sessions belong to no floor; when nothing points at one, the guess is none.
+
+**Always confirm.** The session always asks the user which workspace this session is tied to, even when the guess looks certain: one line at the end of the first reply, with the guess first and its metrics, the next one or two candidates, and "none". If the guess is a floor, the same line carries the continuation seed (the last one used on that floor, else a small default) so a yes covers it. The question never blocks the task: the agent answers the user's prompt first, and nothing is posted until the tie is confirmed. Record the answer in the ties log next to the guess, "none" included, so a wrong guess teaches the next one. A prompt that does not answer is recorded as none with `"guess"` kept, and the session does not ask again; the user can tie it later by saying so.
+
+**Tied.** The session's metrics are the floor's metrics, or the ones the user names in the answer; weights and the continuation seed come from the answer or the floor's last tie, restated in one line. A round is a finished chunk of the user's task: at the end of each, the continuation proposal for the next chunk is posted or read (section 5), and the user's word to continue or stop decides it. Ranking new actions (section 4) runs only when the user asks for it.

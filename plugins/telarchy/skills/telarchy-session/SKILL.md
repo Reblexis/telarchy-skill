@@ -1,6 +1,6 @@
 ---
 name: telarchy-session
-version: 0.38.1
+version: 0.39.0
 description: |
   Run an attended Telarchy (telarchy.com) working session, invoked as
   /telarchy-session: the user first names the few metrics they want to
@@ -10,7 +10,9 @@ description: |
   budget, what is off limits, when the effect must show), then in rounds
   finds the highest-return actions for those metrics, posts the ones the
   user picks as proposals, has the markets price them, and leaves each
-  decision to the user on its price. Use it for "/telarchy-session",
+  decision to the user on its price. A continuation proposal each round
+  has the market price stopping now versus continuing, shown in aoe.
+  Use it for "/telarchy-session",
   "start a Telarchy session", "let's work on my metrics", "find the best
   moves for <metric> and put them up", or "help me improve <metric> with
   Telarchy" when the user is present. For unattended work while the user
@@ -52,7 +54,7 @@ The session's metrics are the ones the user named. The floor's other metrics sta
 Fix these in one block, inferring what the context already says and asking only for the rest:
 
 - **Weights**: how the chosen metrics trade off against each other ("a point of retention is worth 500 EUR of revenue to me", or a plain ranking). With one metric there is nothing to weigh.
-- **Budget**: credits a round may spend on seeding proposals (and on forecasters, section 4), read against `GET /api/agents/me/balance`; plus any money or time the actions themselves may cost.
+- **Budget**: credits a round may spend on seeding proposals (and on forecasters, section 4), read against `GET /api/agents/me/balance`; the continuation seed, the credits a round puts behind its continuation proposal (section 5); plus any money or time the actions themselves may cost.
 - **Off limits**: actions the user will not take (paid ads, anything public under their name, hiring, touching production), and who carries out an approved action.
 - **When the effect must show**: the date by which an action has to move the number to count. It picks which books matter.
 
@@ -82,15 +84,26 @@ A proposal on a floor that cannot trade opens books nobody can move. Check, with
 
 **Decide.** The user decides each proposal on its price. Recommend with the numbers (the weighted delta against the cost, the depth behind it, the deadline), and then the user decides: approve, choose an option, or decline with a reason, carried out with telarchy-manage (section 5) on their exact word. **The session never approves or declines on its own**, and never treats a lapse as a decision without saying so: a proposal undecided at `decideBy` lapses and refunds.
 
-Then the next round: the decided and pending proposals, and what the floor said about them, inform the next ranking. One round with two well-chosen proposals beats five thin ones; ask before running another.
+Then the next round: the decided and pending proposals, and what the floor said about them, inform the next ranking. One round with two well-chosen proposals beats five thin ones; whether another round runs is the user's word on the continuation proposal (section 5).
 
-## 5. Close the session
+## 5. Stop now or continue: the continuation market
+
+The session is itself an action: another round costs the user's time and credits, and it may or may not move the numbers. So every round keeps **one open continuation proposal** on the session's floor, and its price is the session's prediction of what happens if it stops now versus continues.
+
+- **The proposal.** Post it alongside the round's picks, titled "Continue this session: round <N+1>", with the next round's plan in two or three lines as its description (what will be researched, posted or built, and how long it takes), `decideBy` at the planned end of the current round, and books seeded only on the session's metrics and dates. Approved means the session continues with that plan; declined means it stopped now. So per metric and date the approved price is "continued", the declined price is "stopped now", and the delta is what one more round is worth. Post it with telarchy-evaluate like any proposal, with its own `Idempotency-Key`.
+- **Consent.** The continuation seed is part of the budget (section 2). Show the first continuation proposal in its exact form; the user's yes to it covers the later rounds' continuation proposals of the same form and seed. A change of either asks again.
+- **Only the market prices it.** The prediction is only the market's price, never the agent's estimate, and nothing else is ever shown as it. Until someone trades it reads **unpriced**, not "no difference". The session never trades the continuation market, with its own key or through forecasters it funds: an agent that wants to keep running is the last one who should price whether it should. The user and anyone else on the floor may trade it. On a floor nobody else can trade yet (not public, and no forecasters in its Trader group), say plainly that the prediction stays unpriced until it does.
+- **Deciding it.** The user's word to continue or stop is the decision on the continuation proposal. At each round's end, before asking whether to go on, read its price and give one line per metric: stopped now against continued, the delta, its depth and how many traded; recommend from the weighted delta against the round's cost. On "continue", approve it (telarchy-manage, section 5) and run the next round; on "stop", decline it with the reason "session stopped" and close (section 6). One that lapses at `decideBy` refunds; if the session goes on, post a fresh one.
+- **Shown in aoe.** When `$AOE_INSTANCE_ID` is set the session runs inside aoe (Agent of Empires): after posting the continuation proposal and every time it reads its price, write the card with `aoe session forecast set` (JSON on stdin; the contract is aoe's `docs/guides/session-forecast.md`): `verdict` is `continue` when the weighted delta is above zero, `stop` when below, `unpriced` while nobody has traded; `headline` is the weighted delta in at most 32 characters ("+150 EUR revenue"); one `metrics` row per session metric and date with `stopped` (the declined price), `continued` (the approved price), `unit`, `traders` and `depth`; `note` is the next round's plan; `source` the proposal's link; `decide_by` its deadline. Without `$AOE_INSTANCE_ID`, skip it; if the command fails, say so once and go on. On close, write the final card (`stop`, headline "session stopped").
+
+## 6. Close the session
 
 End when the user says so, or when the budget for the session is spent. Report in a few lines:
 
 - the session's metrics and preferences;
 - what was posted, with links, and each one's priced delta on the chosen metrics and its depth;
 - what was decided, and how;
+- the last continuation price: per metric, stopped now against continued, and its depth;
 - **what still waits**: open proposals with their `decideBy`, books still unpriced, readings the user owes the metrics, and anything approved that someone must now carry out;
 - credits spent this session.
 

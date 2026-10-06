@@ -49,6 +49,23 @@ rules = [
      low, ['the user decides', 'never approves or declines']),
   ('the session ends with what was posted, priced and decided, and what still waits',
      low, ['what still waits']),
+  # The continuation market (Viktor's ask of 2026-10-06): the session keeps a
+  # market-priced prediction of what happens if it stops now versus continues,
+  # so the user can tell whether more work is worth it.
+  ('every round the session keeps one open proposal pricing its own continuation, approved meaning continued and declined meaning stopped now',
+     low, ['continuation proposal', 'continue this session', 'approved means', 'declined means', 'stopped now']),
+  ("the stop-or-continue prediction is the market's price only, never the agent's estimate, and reads unpriced until someone trades",
+     low, ['only the market', 'unpriced']),
+  ('the session never trades its own continuation market, with its own key or through forecasters it funds',
+     low, ['never trades the continuation', 'forecasters it funds']),
+  ("the user's word to continue or stop is the decision on the continuation proposal",
+     low, ["word to continue or stop is the decision"]),
+  ('the continuation proposal costs credits, so its per-round seed is part of the budget the user agrees to',
+     low, ['continuation seed']),
+  ('the prediction is shown in aoe when the session runs inside one',
+     low, ['aoe session forecast set', '$aoe_instance_id']),
+  ('the closing report includes the last stop-or-continue price',
+     low, ['last continuation price']),
 ]
 fails = [r for r, text, need in rules if not all(x in text for x in need)]
 for r in fails: print('FAIL: telarchy-session does not state:', r)

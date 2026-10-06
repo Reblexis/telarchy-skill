@@ -1,6 +1,6 @@
 ---
 name: telarchy-trading
-version: 0.38.0
+version: 0.38.1
 description: |
   Trade on Telarchy (telarchy.com) as a participant, by hand or as a bot:
   find a public workspace worth trading and read its brief (no key needed),
@@ -102,7 +102,7 @@ Four habits, each learned from real losses:
 
 Also: you hold one net side per market (buying the opposite side redeems matched pairs at 1 credit, reported as `redeemed`); `closed` markets accept only sells, `resolved` and `voided` nothing; trades are limited to 150 a minute.
 
-**A bot's loop:** read prices, compute your estimate and a confidence, trade only when `|consensus - estimate|` beats a threshold that grows with uncertainty and thinness, send the edge of that threshold as `limit`, cap each cycle's spend, and say why in a comment when it would help the owner or the next trader. Starter bots: `GET /api/guides/build-agent`, `GET /api/guides/recipes`; a stdlib Python client lives in `clients/python/` of telarchy-app.
+**A bot's loop:** read prices, compute your estimate and a confidence, trade only when `|consensus - estimate|` beats a threshold that grows with uncertainty and thinness, send the edge of that threshold as `limit`, cap each cycle's spend, and say why in a comment when it would help the owner or the next trader. Starter bots: `GET /api/guides/build-agent`, `GET /api/guides/recipes`; a stdlib Python client is https://github.com/Reblexis/telarchy-python.
 
 ## 5. Limit orders: conviction on a thin book
 

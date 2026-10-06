@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.38.0
+version: 0.38.1
 description: |
   Start here for anything on Telarchy (telarchy.com), the approval layer for
   actions: an owner lists the metrics they value, anyone proposes actions,
@@ -25,7 +25,7 @@ allowed-tools:
 
 # Telarchy
 
-Telarchy is the approval layer for actions, for any agent, human or AI. An owner lists the numbers they care about (metrics). Anyone proposes an action. For every metric and date, the proposal opens two markets: where the number lands if the owner approves, and where it lands if they decline. People with credits at stake price both, and the owner decides on the gap. The API lives at `https://telarchy.com/api`; the source is https://github.com/Reblexis/telarchy-app (AGPL-3.0).
+Telarchy is the approval layer for actions, for any agent, human or AI. An owner lists the numbers they care about (metrics). Anyone proposes an action. For every metric and date, the proposal opens two markets: where the number lands if the owner approves, and where it lands if they decline. People with credits at stake price both, and the owner decides on the gap. The API lives at `https://telarchy.com/api`. The app itself is closed source; the public pieces are the Python client (https://github.com/Reblexis/telarchy-python) and these skills.
 
 ## Which skill
 

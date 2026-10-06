@@ -66,6 +66,21 @@ rules = [
      low, ['aoe session forecast set', '$aoe_instance_id']),
   ('the closing report includes the last stop-or-continue price',
      low, ['last continuation price']),
+  # Attached to an aoe session (Viktor's ask of 2026-10-06): a hook starts the
+  # skill after the first prompt of every new aoe session; it learns which
+  # sessions belong to which workspace, and always asks him to confirm.
+  ('started alongside another task, the session ties itself to a workspace and does not take over the task',
+     low, ['attached', 'does not take over']),
+  ('ties are remembered in a ties log, one line per session, and past ties inform the guess',
+     low, ['ties log', '$telarchy_session_ties', 'past ties']),
+  ('the tie is always confirmed by the user, even when the guess looks certain, and none is an answer',
+     low, ['always asks', 'even when the guess looks certain', '"none"']),
+  ('the tie question never blocks the task: asked at the end of the reply, nothing is posted until confirmed',
+     low, ['never blocks', 'nothing is posted until']),
+  ('the answer is recorded with the guess, so wrong guesses teach the next one',
+     low, ['record the answer', 'guess']),
+  ('after every reply a tied session ends with a current overview of the forecasts and refreshes the aoe card',
+     low, ['forecast overview', 'every reply', 'refresh']),
 ]
 fails = [r for r, text, need in rules if not all(x in text for x in need)]
 for r in fails: print('FAIL: telarchy-session does not state:', r)

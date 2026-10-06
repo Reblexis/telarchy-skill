@@ -38,6 +38,11 @@ rules = [
      ['nothing to be paid', 'payoutmethod', 'payby', '30 days']),
   ('telarchy-trading', "a bot without a payout method of its own is paid to its owner's (2026-10-03)",
      ["paid to its owner's"]),
+  # The connector (telarchy-app docs/connector.md, 2026-10): a chat that has
+  # the Telarchy tools already acts as the person, so the index says so and
+  # never sends that agent off to mint a key.
+  ('telarchy', 'the connector at /mcp acts as the person; with its tools, use them and ask for no key',
+     ['telarchy.com/mcp', 'acts as the person', 'no key', 'asks first']),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
 # The retired claim step must not be taught anywhere.

@@ -49,6 +49,8 @@ A job often crosses two: evaluating an idea for someone with no workspace yet go
 
 **Auth, three ways.** `X-Agent-Key` (a participant key, scoped), a browser session cookie (after `POST /api/auth/sign-in/email`), or `X-API-Key` (the instance's master key, operators only). A key's power is its participant's group capabilities (`read`, `trade`, `manage`, `manage_workspace`) narrowed by the key's scopes. Detail: `GET /api/guides/auth-and-keys`.
 
+**Through the connector, no key at all.** A person can add `https://telarchy.com/mcp` as a connector in Claude (claude.ai, Desktop, Claude Code) or Codex and log in once; that connection acts as the person who connected it. If your tools include Telarchy's `look`, `build`, `trade`, `fund`, `post`, `decide`, `publish`, `remove`, `access`, `money` and `confirmations`, you are on it: use those tools for every call this skill and the others describe (each takes the method and path from `GET /api/help`), ask the person for no key, and register no bot for them. A type that asks first runs only on their explicit yes to that exact act; pass the line they agreed to as `confirmation`. Setup for a person: `GET /api/guides/connect`.
+
 **Name the workspace.** Almost every call needs `X-Workspace-Id` (the id, or the slug of a public workspace). `GET /api/workspaces` with a key and no `X-Workspace-Id` lists the workspaces that key belongs to, with `memberRole`. A web path `/{ownerHandle}/{slug}` maps to an id with `GET /api/workspaces/resolve?owner=<handle>&slug=<slug>`.
 
 **Reading a public workspace needs no key.** Send `X-Workspace-Id` alone and every read answers. Only acts (trade, comment, propose, write) need an identity. Private and unlisted workspaces need membership.

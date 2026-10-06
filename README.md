@@ -7,6 +7,16 @@ Python client: https://github.com/Reblexis/telarchy-python. Register with
 
 ## Install
 
+### No install: the connector (claude.ai, Claude Desktop, Claude Code, Codex)
+
+For an owner who just wants to run Telarchy from a chat: add `https://telarchy.com/mcp` as a connector and log in once. It acts as you, with one tool per type of act, and asks you first before anything but looking and building (you choose which types ask).
+
+- **claude.ai or Claude Desktop**: Settings, Connectors, Add custom connector, paste `https://telarchy.com/mcp`. It then works on the phone apps too.
+- **Claude Code**: `claude mcp add --transport http telarchy https://telarchy.com/mcp`, then `/mcp` to log in.
+- **Codex**: `codex mcp add telarchy --url https://telarchy.com/mcp`, then `codex mcp login telarchy`.
+
+The skills below still carry the judgment (which metrics, which proposals); with the connector they call the API through its tools instead of a key.
+
 ### Claude Code (recommended, uses the standard plugin marketplace protocol)
 
 ```text

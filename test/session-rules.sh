@@ -79,6 +79,13 @@ rules = [
      low, ['never blocks', 'nothing is posted until']),
   ('the answer is recorded with the guess, so wrong guesses teach the next one',
      low, ['record the answer', 'guess']),
+  # The guess is not none by default (Viktor, 2026-10-09: "ofc its tied to that
+  # worksapce.. why woul dyou keep guessing none"): work on a floor's own subject
+  # belongs to that floor, and a question nobody answered teaches nothing.
+  ("the guess comes from what the work is about: work on a floor's own subject is tied to that floor, and none is never the default",
+     low, ["floor's own subject", 'none is never the default']),
+  ('an unanswered tie question is recorded as unanswered, never as none, and only answered ties inform the guess',
+     low, ['"answered": false', 'never as none', 'only answered ties']),
   ('after every reply a tied session ends with a current overview of the forecasts and refreshes the aoe card',
      low, ['forecast overview', 'every reply', 'refresh']),
 ]

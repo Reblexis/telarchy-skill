@@ -1,6 +1,6 @@
 ---
 name: telarchy-loop
-version: 0.39.2
+version: 0.39.3
 description: |
   Run Telarchy (telarchy.com) as an unattended goal loop of decentralized
   standing workers while the owner is away for hours. Given a

@@ -141,7 +141,7 @@ Groups seed on creation: `Public` (read), `Trader` (read, trade), `Admin` (read,
 
 ## 7. What traders see
 
-`PUT /api/workspaces/<id>/settings` carries `description` (the card line), `charter` (the owner's public commitment about how they decide, which makes decline reasons mandatory), `subjectAbout`, and the lifecycle fields that also need `manage_workspace`: `visibility`, `autoFundNewMarkets`, `newMarketLiquidityCredits`, `proposalReward`, `spamPenalty`, `maxPendingProposalsPerParticipant`, `decisionMinutes`, `externalProposalsDisabled` (only managers may post). Check the field list in `GET /api/help?q=settings` before sending.
+`PUT /api/workspaces/<id>/settings` carries `description` (the card line), `charter` (the owner's public commitment about how they decide, which makes decline reasons mandatory), `subjectAbout`, `logoUrl` (the floor's logo, an https image drawn before its name; null clears), and the lifecycle fields that also need `manage_workspace`: `visibility`, `autoFundNewMarkets`, `newMarketLiquidityCredits`, `proposalReward`, `spamPenalty`, `maxPendingProposalsPerParticipant`, `decisionMinutes`, `externalProposalsDisabled` (only managers may post). Check the field list in `GET /api/help?q=settings` before sending.
 
 - **Announcements**, for anything material the market cannot see: `POST /api/workspaces/<id>/announcements { body }`. Append-only; `PUT .../announcements/<aid>` corrects and keeps the original.
 - **Plans**, what the owner will do and by when in their own words: `POST /api/workspaces/<id>/plans { title, description, start, due }`, `PUT .../plans/<pid> { done: true }`. No delete: a public plan is done or edited, never quietly dropped.

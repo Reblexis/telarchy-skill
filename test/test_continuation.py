@@ -584,7 +584,55 @@ class Card(Base):
         self.assertEqual(args[:3], ['session', 'forecast', 'set'])
         self.assertIn(INSTANCE, args)
 
-    def test_the_overview_is_at_most_four_lines(self):
+    def test_a_declined_proposal_with_lapsed_at_reads_as_lapsed(self):
+        self.tie()
+        self.stub.add_proposal('p-7', 7, status='declined',
+                               pairs=[self.stub.pair('m-rev', 'Revenue (USD)', LATER, 120, 100, a_trades=1)])
+        self.stub.proposals['p-7']['lapsedAt'] = iso(NOW)
+        self.log_post('p-7', 7)
+        self.run_cli('card')
+        self.assertEqual(self.card()['verdict'], 'unpriced')
+        self.assertEqual(self.card()['headline'], 'lapsed undecided')
+
+    def test_the_biggest_movers_come_first_and_unpriced_rows_last(self):
+        self.tie()
+        s = self.stub
+        pairs = [s.pair('m-a', 'Quiet', LATER, 100, 100),
+                 s.pair('m-b', 'Small', LATER, 110, 100, a_trades=1),
+                 s.pair('m-c', 'Big fall', LATER, 100, 400, a_trades=1),
+                 s.pair('m-d', 'Mid', LATER, 150, 100, d_trades=2)]
+        s.add_proposal('p-7', 7, pairs=pairs)
+        books = [{'metric_id': m, 'metric_name': n, 'target_date': LATER, 'amount': 10}
+                 for m, n in [('m-a', 'Quiet'), ('m-b', 'Small'), ('m-c', 'Big fall'), ('m-d', 'Mid')]]
+        self.log_post('p-7', 7, books=books)
+        r = self.run_cli('card')
+        self.assertEqual([row['name'] for row in self.card()['metrics']], ['Big fall', 'Mid', 'Small', 'Quiet'])
+        lines = r.stdout.splitlines()
+        self.assertTrue(lines[1].startswith('Big fall'), r.stdout)
+        self.assertIn('priced on 3 of 4 books, 4 trades', r.stdout)
+
+    def test_an_untraded_proposal_says_no_forecaster_has_traded_it(self):
+        self.tie()
+        s = self.stub
+        s.add_proposal('p-7', 7, pairs=[s.pair('m-rev', 'Revenue (USD)', LATER, 100, 100)])
+        self.log_post('p-7', 7)
+        r = self.run_cli('card')
+        self.assertIn('Unpriced: no forecaster has traded it yet', r.stdout)
+        self.assertNotIn('priced on', r.stdout)
+
+    def test_the_overview_shows_at_most_three_movers(self):
+        self.tie()
+        s = self.stub
+        pairs = [s.pair(f'm-{i}', f'Metric {i}', LATER, 10 + i, 10, a_trades=1) for i in range(8)]
+        s.add_proposal('p-7', 7, pairs=pairs)
+        books = [{'metric_id': f'm-{i}', 'metric_name': f'Metric {i}', 'target_date': LATER, 'amount': 10}
+                 for i in range(8)]
+        self.log_post('p-7', 7, books=books)
+        r = self.run_cli('card')
+        movers = [l for l in r.stdout.splitlines() if ': stopped ' in l]
+        self.assertEqual(len(movers), 3, r.stdout)
+
+    def test_the_overview_is_at_most_six_lines(self):
         self.tie()
         s = self.stub
         pairs = [s.pair(f'm-{i}', f'Metric {i}', LATER, 10 + i, 10, a_trades=1) for i in range(8)]
@@ -595,7 +643,7 @@ class Card(Base):
         r = self.run_cli('card')
         lines = [l for l in r.stdout.splitlines() if l.strip()]
         self.assertGreaterEqual(len(lines), 2)
-        self.assertLessEqual(len(lines), 4)
+        self.assertLessEqual(len(lines), 6)
         self.assertIn('/acme/p/7', r.stdout)
 
     def test_an_aoe_failure_is_said_once_and_the_overview_still_prints(self):

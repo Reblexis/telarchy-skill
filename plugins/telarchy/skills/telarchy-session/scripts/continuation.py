@@ -23,6 +23,7 @@ TITLE_MAX = 120
 HEADLINE_MAX = 32
 NOTE_MAX = 280
 ROWS_MAX = 8
+MOVERS_MAX = 3
 
 
 class Fail(Exception):
@@ -322,29 +323,35 @@ def cmd_post(args, instance):
 
 def build_card(post, proposal, traders, weights):
     status = proposal.get('status')
-    rows, scored = [], []
+    if status == 'declined' and proposal.get('lapsedAt'):
+        status = 'lapsed'
+    rows, scored, trades_total = [], [], 0
     seeded = {(b['metric_id'], b['target_date'][:10]) for b in post.get('books') or []}
-    for m in proposal.get('markets') or []:
+    for i, m in enumerate(proposal.get('markets') or []):
         res = (m.get('resolvesOn') or '')[:10]
         if (m.get('metricId'), res) not in seeded:
             continue
         a, d = m.get('approved') or {}, m.get('declined') or {}
         cont, stop = a.get('consensus'), d.get('consensus')
         trades = int(a.get('tradeCount') or 0) + int(d.get('tradeCount') or 0)
+        trades_total += trades
         row = {'name': cut(m.get('metricName') or m.get('metricId') or '?', 80), 'date': res,
                'stopped': stop, 'continued': cont,
                'depth': round(float(a.get('liquidity') or 0) + float(d.get('liquidity') or 0), 2)}
         tr = traders.get((m.get('metricId'), res))
         if tr is not None:
             row['traders'] = tr
-        if trades and cont is not None and stop is not None:
+        priced = bool(trades and cont is not None and stop is not None)
+        move = 0.0
+        if priced:
             span = float(m.get('rangeMax') or 0) - float(m.get('rangeMin') or 0)
+            move = (cont - stop) / span if span > 0 else (cont - stop)
             w = float((weights or {}).get(m.get('metricName'), 1))
-            share = w * (cont - stop) / span if span > 0 else w * (cont - stop)
-            scored.append((share, cont - stop, m.get('metricName') or '?'))
-        rows.append(row)
-        if len(rows) >= ROWS_MAX:
-            break
+            scored.append((w * move, cont - stop, m.get('metricName') or '?'))
+        rows.append((not priced, -abs(move), i, row))
+    rows.sort(key=lambda t: t[:3])
+    priced_count = sum(1 for t in rows if not t[0])
+    rows = [t[3] for t in rows][:ROWS_MAX]
 
     rnd = post.get('round')
     if status == 'pending':
@@ -371,14 +378,13 @@ def build_card(post, proposal, traders, weights):
     dl = proposal.get('decideBy') or post.get('decide_by')
     if dl:
         c['decide_by'] = iso(parse_iso(dl))
-    return c, status
+    stats = {'priced': priced_count, 'books': len(seeded), 'trades': trades_total}
+    return c, status, stats
 
 
-def overview(c, status, post):
+def overview(c, status, post, stats):
     lines = []
-    for r in c['metrics'][:2]:
-        if r.get('stopped') is None or r.get('continued') is None:
-            continue
+    for r in c['metrics'][:stats['priced']][:MOVERS_MAX]:
         diff = r['continued'] - r['stopped']
         extra = []
         if r.get('traders') is not None:
@@ -386,16 +392,15 @@ def overview(c, status, post):
         extra.append(f'{fmt_num(r.get("depth"))} cr depth')
         lines.append(f'{r["name"]} {r["date"]}: stopped {fmt_num(r["stopped"])} vs continued '
                      f'{fmt_num(r["continued"])} ({signed(diff)}), {", ".join(extra)}')
-    more = len(c['metrics']) - len(lines)
-    if more > 0 and lines:
-        lines[-1] += f' (+{more} more on the card)'
     head = f'Continuation {c["source"]["label"].replace("Telarchy ", "")}: {c["verdict"]}, {c["headline"]}'
-    if status == 'pending' and c['verdict'] == 'unpriced':
-        head += ' (nobody has priced it yet)'
+    if stats['priced']:
+        depth = f'priced on {stats["priced"]} of {stats["books"]} books, {stats["trades"]} trades'
+    else:
+        depth = 'Unpriced: no forecaster has traded it yet'
     tail = c['source']['url']
     if status == 'pending' and c.get('decide_by'):
         tail += f', decide by {c["decide_by"]}'
-    return [head] + lines + [tail]
+    return [head] + lines + [depth, tail]
 
 
 def write_card(instance, c):
@@ -434,10 +439,10 @@ def card(instance, write_aoe=True):
                         traders[(m.get('metricId'), (m.get('resolvesOn') or '')[:10])] = max(t)
     except Fail:
         pass
-    c, status = build_card(post, proposal, traders, last_tie(instance).get('weights'))
+    c, status, stats = build_card(post, proposal, traders, last_tie(instance).get('weights'))
     if write_aoe:
         write_card(instance, c)
-    print('\n'.join(overview(c, status, post)[:4]))
+    print('\n'.join(overview(c, status, post, stats)))
     return 0
 
 

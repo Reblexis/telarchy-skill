@@ -88,6 +88,14 @@ rules = [
      low, ['"answered": false', 'never as none', 'only answered ties']),
   ('after every reply a tied session ends with a current overview of the forecasts and refreshes the aoe card',
      low, ['forecast overview', 'every reply', 'refresh']),
+  # Task #240 (Viktor, 2026-10-09: "actually upload the telarchy propossl and
+  # show the status inside sessiosn"): tied sessions wrote cards reading "no
+  # continuation proposal yet" and never posted one, because the proposal was
+  # left for some later "end of a chunk" and every agent built the calls by hand.
+  ('a tied session posts its first continuation proposal in the same turn the tie is confirmed',
+     low, ['same turn the tie is confirmed', 'never left for a later chunk']),
+  ('a helper script posts, reads into the card and decides, so no agent builds the calls by hand',
+     low, ['scripts/continuation.py', 'references/continuation.md', 'by hand']),
 ]
 fails = [r for r, text, need in rules if not all(x in text for x in need)]
 for r in fails: print('FAIL: telarchy-session does not state:', r)

@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.39.3
+version: 0.39.4
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -58,7 +58,7 @@ curl -s -b ~/.telarchy-cookies -X POST https://telarchy.com/api/auth/consent -H 
 
 curl -s -b ~/.telarchy-cookies -X POST https://telarchy.com/api/workspaces -H "Content-Type: application/json" \
   -d '{"name":"Acme","template":"saas","templateParams":{"currency":"EUR","revenueRangeMax":50000}}'
-# 201 { id, name, slug, ownerHandle, visibility, template, metricsCreated, starterProposalId }
+# 201 { id, name, slug, ownerHandle, visibility, template, metricsCreated, starterProposalId, liquidityGranted }
 
 curl -s -b ~/.telarchy-cookies -X POST https://telarchy.com/api/agents/me/keys -H "Content-Type: application/json" \
   -d '{"label":"setup + sync","scopes":["workspace:read","workspace:manage","account:agents"]}'
@@ -67,6 +67,7 @@ curl -s -b ~/.telarchy-cookies -X POST https://telarchy.com/api/agents/me/keys -
 
 - Templates: `saas`, `ecommerce`, `marketplace`, `consumer-app`, `agency`, `community`, `creator`, `oss`, `startup`; `wellbeing`, `health-fitness`, `career`, `learning`, `relationships`, `creative-project`, `financial-independence`, `personal`; `blank`. Set `currency` for a non-USD user. A template is a starting point: review its metrics with telarchy-metric-design rather than keeping them by default.
 - **Three workspaces per account** (the fourth is 429 with the cap).
+- **The first floor brings 10,000 credits for liquidity**, once per account: the first workspace an account creates puts them in its liquidity wallet (`liquidityGranted` on the response; 0 for every later floor, even after the first is deleted). Spend them on the first metric's books (section 4).
 - **A new floor is `unlisted`, and unlisted answers strangers nothing** (the same 403 as private). Asking for `public` is clamped to unlisted; listing is a human decision on telarchy.com. Read `visibility` off the response.
 - **To let someone look without signing up, make a view link**: `POST /api/workspaces/<id>/view-link` returns `{ token, url }`. Whoever opens the url sees the floor as its owner does and can change nothing (API: header `X-View-Link: <token>`, `read` on that one floor only). Posting again replaces it and `DELETE` turns it off; either way the old link reads nothing. It never lists the floor or makes it public. Handing access to someone is the owner's call: make one only on their yes.
 - Keys carry a default workspace, so mint one after the workspace exists.
@@ -80,6 +81,8 @@ curl -s -X POST https://telarchy.com/api/metrics -H "X-Agent-Key: $KEY" -H "X-Wo
   -d '{"name":"Monthly revenue (EUR)","description":"Net revenue recognised in the calendar month, read from Stripe on the 1st.",
        "value":31200,"marketRangeMax":50000,"timePreference":{"enabled":false,"customHorizons":["2026-12"]}}'
 ```
+
+**Set the range yourself** from what the owner says the number can reach (`marketRangeMax`, and `marketRangeMin` below zero). Without one the first value sets it (0 to 2v, or -2|v| to 2|v| when negative, 0 to 1000 for a zero) and a later value never moves it; with neither a value nor a range the metric has no market until one arrives.
 
 **One horizon by default.** Ask how many dates the owner decides on; for one, send `enabled: false` and a single `customHorizons` entry, as above. The curve (`enabled: true`, 3 sampled dates by default) combined with `customHorizons` stacks markets, three plus each custom date, and every proposal opens a pair on each.
 
@@ -112,8 +115,10 @@ Metrics with a time preference open markets on the hourly refresh; force it with
 
 - One book: `POST /api/predictions/markets/<id>/liquidity { amount }` (a refundable LP position).
 - Every baseline book: `POST /api/predictions/markets/liquidity/bulk { amount }`; one proposal's books: add `proposalId`.
-- Per date, set once: `timePreference.horizonCredits` on the metric, `{"+1w": {"book": 500, "proposal": 250}}` (`book` for the metric's own market, `proposal` for what a proposal's branch opens with on that date, default 0 so proposers fund their own).
+- Per date, set once: `timePreference.horizonCredits` on the metric, `{"+1w": {"book": 500, "proposal": 250}}` (`book` for the metric's own market, `proposal` for what a proposal's branch opens with on that date, default 0 so proposers fund their own). Send it in the create call: a new floor's own default is 0.5 credits a book, so without it the books open nearly empty (the web UI sends 1,000 per date).
 - `GET /api/setup/checklist?workspaceId=<id>` lists an unfunded book under `blocking`. Check it before telling the user they are live.
+
+**Then the forecasters.** A funded book still needs someone to price it. The owner can invite AI forecasters by adding their participant ids to the floor's Trader group (`PUT /api/groups/<id>` with `memberIds`, keeping its existing members). These work private floors: `claude-sonnet`, `claude-fable`, `reference-astra`, `deepseek-pro`, `qwen-max`, `kimi-k3`, `glm`, `muse-spark`. They start trading within a couple of minutes and see the floor's numbers; ask the owner first, since inviting them is sharing the floor.
 
 Void an untraded market with `POST /api/predictions/markets/:id/void`; a traded one needs `{ acknowledgeTraded: true, reason }` (published). Force-resolve (`POST /api/predictions/markets/:id/resolve`) pays out now and is irreversible.
 

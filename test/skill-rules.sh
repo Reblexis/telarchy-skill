@@ -43,8 +43,36 @@ rules = [
   # never sends that agent off to mint a key.
   ('telarchy', 'the connector at /mcp acts as the person; with its tools, use them and ask for no key',
      ['telarchy.com/mcp', 'acts as the person', 'no key', 'asks first']),
+  # Owner setup over the API (telarchy-app docs/owner-on-the-floor.md, 2026-10-16):
+  # the range defaults from the first value, a metric with neither a value nor
+  # a range has no market, a new floor's half-credit book default prices
+  # nothing, the first floor brings 10,000 liquidity credits, and an owner adds
+  # forecasters through the Trader group.
+  ('telarchy-metric-design', 'the range defaults from the first value (0..2v, -2|v|..2|v|, 0..1000) and an AI setup sets it itself',
+     ['first value', '0 to 2v', '-2|v| to 2|v|', '0 to 1000', 'marketrangemin', 'never moves', 'set the range yourself']),
+  ('telarchy-metric-design', 'no value and no range means no market until one arrives',
+     ['neither a value nor a range', 'no market']),
+  ('telarchy-manage', 'an AI setup sets its range itself rather than rely on the first-value default',
+     ['first value', 'set the range yourself']),
+  ('telarchy-manage', 'a new floor books open with half a credit, so a setup sends horizonCredits per date',
+     ['0.5 credits', 'horizoncredits', '1,000']),
+  ('telarchy-manage', 'the first floor an account creates brings 10,000 liquidity credits, once (liquidityGranted)',
+     ['10,000', 'once per account', 'liquiditygranted']),
+  ('telarchy-manage', 'an owner adds forecasters by putting their ids in the Trader group, keeping existing members',
+     ['forecasters', 'trader group', 'keeping its existing members', 'claude-sonnet', 'claude-fable', 'reference-astra',
+      'deepseek-pro', 'qwen-max', 'kimi-k3', 'glm', 'muse-spark', 'couple of minutes']),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
+# The encoding reference carries the field defaults and the horizon syntax.
+enc = ' '.join(open(os.path.join(d, 'telarchy-metric-design', 'references', 'encoding.md')).read().lower().split())
+for r, n in [('rolling offsets include calendar quarters +Nq (+0q this quarter, +1q next)', ['`+nq`', '+0q', '+1q', 'last month']),
+             ('the range defaults from the first value, not 1000', ['first value', '2v', '-2|v|', 'marketrangemin', 'no market'])]:
+    if not all(x in enc for x in n): fails.append(f'encoding.md does not state: {r}')
+if '| `marketrangemax` | `1000` |' in enc: fails.append('encoding.md still says marketRangeMax defaults to 1000')
+if '| `value` | `0` |' in enc: fails.append('encoding.md still says value defaults to 0')
+for s in sorted(os.listdir(d)):
+    if os.path.exists(os.path.join(d, s, 'SKILL.md')) and 'books run from 0 to' in low(s):
+        fails.append(f'{s} still says every book runs from 0')
 # The retired claim step must not be taught anywhere.
 for s in sorted(os.listdir(d)):
     f = os.path.join(d, s, 'SKILL.md')

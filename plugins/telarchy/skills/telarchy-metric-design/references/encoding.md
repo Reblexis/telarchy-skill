@@ -33,16 +33,19 @@ Create leaves first and composites second (a formula names its parts).
 |---|---|---|
 | `name` | required | Short handle. Trailing `(USD)` or `$` = money; money plus "net" = approved branches open at baseline minus the ask. No date in it. Formulas and syncs reference it exactly. |
 | `description` | `""` | The settlement text: what, where from, when, what is excluded. |
-| `value` | `0` | The current reading. Ignored (stored as 0) on a computed metric. Never invent one: use the honest current value, or N/A handling. |
+| `value` | none | The current reading. Omitted means no reading yet, not zero. Ignored (stored as 0) on a computed metric. Never invent one: use the honest current value, or N/A handling. |
 | `formula` | `"0"` | Empty or `0` = leaf. Anything else = computed. Markets open only on leaves. |
-| `marketRangeMax` | `1000` | Books run 0..this. Settlement clamps at the top. Leaf only, positive. |
+| `marketRangeMax` | from the first value | Upper edge of every book; settlement clamps at the edges. Leaf only. See **The range**, below. |
+| `marketRangeMin` | `0` (or from a negative first value) | Lower edge, sent together with `marketRangeMax` and below it. |
 | `timePreference` | `{ enabled: true, halfLife: 1 }` | Which dates open markets. Omitted means that default, so set it deliberately. `null` = no curve and no horizons (an evidence series). |
 | `resetsEvery` | `null` | `hour`, `day`, `week`, `month`, `year` when the number restarts each period. Changes only which readings the chart attributes to a period, never settlement. Null for a level. |
 | `resolvesNaUntilMeasured` | `false` | For a number that does not exist until an event (a valuation before a round) or until a person reports it (a rating): its markets void as N/A while it has no reading at or before their instant. The first reading ends that for good, so send no placeholder `value` with it. |
 | `opensAt` | `null` | Leaf only, inside the range: where untraded books open instead of at the reading. For a number with no running reading (a game's score). Put it in the create call, or the first book opens at the wrong price. |
-| `liquidityCredits` | workspace default | What a new book on this metric opens with. `horizonCredits` overrides it per date. |
+| `liquidityCredits` | workspace default | What a new book on this metric opens with. `horizonCredits` overrides it per date. A new floor's default is 0.5 credits, which prices nothing: send `horizonCredits` (the web UI sends 1,000 per date). |
 | `settlementLagMinutes` | 0 | How long after a period the number is final (0 to 90 days). Markets opened afterwards settle that long after their period. |
 | `marketTitle` | null | The whole question over this metric's book, in the owner's words (at most 200 chars). |
+
+**The range.** Unset, the first value sets it: 0..2v for v > 0, -2|v|..2|v| for v < 0, 0..1000 for 0. An explicit `marketRangeMax` (and `marketRangeMin`) always wins, and a later value never moves it, so send it yourself from what the owner says the number can reach. With neither a value nor a range the metric has no market: its dates are stored and its books open the moment a value or range arrives.
 
 There is no `target`, `granularity` or `unit`. A goal line is a market, not a field. Order is set with `POST /api/metrics/reorder` (an array of ids); the headline is the furthest-resolving open market, ties to the lower order.
 
@@ -53,7 +56,7 @@ There is no `target`, `granularity` or `unit`. A goal line is a market, not a fi
 - `halfLife` is in **years**: the median sampled date sits at it. 0.25 to 0.5 tactical, 1 annual planning, 2 to 5 structural. `density` (default 3) is how many dates the curve samples; every date is a book that needs money, and every proposal adds two books per date, so count before raising it: metrics x dates x (1 + 2 per pending proposal).
 - At most one metric on any path carries the curve. Different timescales are siblings.
 - `customHorizons` (max 24), with the curve on or off:
-  - rolling `+Nmin` (1 to 1440), `+Nh`, `+Nd`, `+Nw`, `+Nm` (months), `+Ny`, re-resolved on every refresh; `+0d` / `+0w` is the current period.
+  - rolling `+Nmin` (1 to 1440), `+Nh`, `+Nd`, `+Nw`, `+Nm` (months), `+Nq` (calendar quarters, each a month market on the quarter's last month: `+0q` is the quarter running now, `+1q` the next, so in October 2026 `+1q` is `2027-03`), `+Ny`, re-resolved on every refresh; `+0d` / `+0w` is the current period.
   - one-shot `YYYY`, `YYYY-MM`, `YYYY-Www`, `YYYY-MM-DD`, `YYYY-MM-DDTHH` (UTC hour), `YYYY-MM-DDTHH:MM` (UTC minute); resolves at the end of that period.
   - `until-settled`: no clock; trades until `POST /api/metrics/:id/settle`, then the next refresh opens a fresh one. Settling settles every open book on the metric, so give it a metric of its own or one whose dated books share the answer.
 - `horizonCredits[entry] = { book, proposal }`: what the metric's own book and each proposal branch open with on that date, paid by the owner. `proposal` defaults to 0, meaning proposers fund their own.

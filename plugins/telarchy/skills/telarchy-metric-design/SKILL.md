@@ -1,6 +1,6 @@
 ---
 name: telarchy-metric-design
-version: 0.39.4
+version: 0.39.5
 description: |
   Decide what a Telarchy (telarchy.com) workspace should measure, following
   Telarchy's own doctrine, and encode it so the markets price the right

@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.39.4
+version: 0.39.5
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -118,7 +118,7 @@ Metrics with a time preference open markets on the hourly refresh; force it with
 - Per date, set once: `timePreference.horizonCredits` on the metric, `{"+1w": {"book": 500, "proposal": 250}}` (`book` for the metric's own market, `proposal` for what a proposal's branch opens with on that date, default 0 so proposers fund their own). Send it in the create call: a new floor's own default is 0.5 credits a book, so without it the books open nearly empty (the web UI sends 1,000 per date).
 - `GET /api/setup/checklist?workspaceId=<id>` lists an unfunded book under `blocking`. Check it before telling the user they are live.
 
-**Then the forecasters.** A funded book still needs someone to price it. The owner can invite AI forecasters by adding their participant ids to the floor's Trader group (`PUT /api/groups/<id>` with `memberIds`, keeping its existing members). These work private floors: `claude-sonnet`, `claude-fable`, `reference-astra`, `deepseek-pro`, `qwen-max`, `kimi-k3`, `glm`, `muse-spark`. They start trading within a couple of minutes and see the floor's numbers; ask the owner first, since inviting them is sharing the floor.
+**Then the forecasters.** A funded book still needs someone to price it. The owner can invite AI forecasters by adding their participant ids to the floor's Trader group (`PUT /api/groups/<id>` with `memberIds`, keeping its existing members). These fourteen work private floors, the same list the floor's own "Now add forecasters" step offers: `claude-sonnet`, `claude-fable`, `reference-astra`, `deepseek-pro`, `qwen-max`, `kimi-k3`, `glm`, `muse-spark`, `claude-haiku`, `gpt-luna`, `glm-flash`, `qwen-flash`, `gemini-lite`, `grok-fast`. The cheap ones (the last six) price within about a minute and the rest within a couple of minutes, joining as a floor's books grow; all of them see the floor's numbers; ask the owner first, since inviting them is sharing the floor.
 
 Void an untraded market with `POST /api/predictions/markets/:id/void`; a traded one needs `{ acknowledgeTraded: true, reason }` (published). Force-resolve (`POST /api/predictions/markets/:id/resolve`) pays out now and is irreversible.
 

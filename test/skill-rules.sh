@@ -60,7 +60,8 @@ rules = [
      ['10,000', 'once per account', 'liquiditygranted']),
   ('telarchy-manage', 'an owner adds forecasters by putting their ids in the Trader group, keeping existing members',
      ['forecasters', 'trader group', 'keeping its existing members', 'claude-sonnet', 'claude-fable', 'reference-astra',
-      'deepseek-pro', 'qwen-max', 'kimi-k3', 'glm', 'muse-spark', 'couple of minutes']),
+      'deepseek-pro', 'qwen-max', 'kimi-k3', 'glm', 'muse-spark', 'claude-haiku', 'gpt-luna', 'glm-flash',
+      'qwen-flash', 'gemini-lite', 'grok-fast', 'within about a minute', 'couple of minutes']),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
 # The encoding reference carries the field defaults and the horizon syntax.

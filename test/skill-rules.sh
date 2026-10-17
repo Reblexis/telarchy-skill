@@ -47,7 +47,7 @@ rules = [
   # the range defaults from the first value, a metric with neither a value nor
   # a range has no market, a new floor's half-credit book default prices
   # nothing, the first floor brings 10,000 liquidity credits, and an owner adds
-  # forecasters through the Trader group.
+  # forecasters by browsing the suggestions and inviting them as traders.
   ('telarchy-metric-design', 'the range defaults from the first value (0..2v, -2|v|..2|v|, 0..1000) and an AI setup sets it itself',
      ['first value', '0 to 2v', '-2|v| to 2|v|', '0 to 1000', 'marketrangemin', 'never moves', 'set the range yourself']),
   ('telarchy-metric-design', 'no value and no range means no market until one arrives',
@@ -58,9 +58,9 @@ rules = [
      ['0.5 credits', 'horizoncredits', '1,000']),
   ('telarchy-manage', 'the first floor an account creates brings 10,000 liquidity credits, once (liquidityGranted)',
      ['10,000', 'once per account', 'liquiditygranted']),
-  ('telarchy-manage', 'an owner adds forecasters by putting their ids in the Trader group, keeping existing members',
-     ['forecasters', 'trader group', 'keeping its existing members', 'claude-sonnet', 'claude-fable', 'reference-astra',
-      'deepseek-pro', 'qwen-max', 'kimi-k3', 'glm', 'muse-spark', 'couple of minutes']),
+  ('telarchy-manage', 'an owner browses forecasters by record, finds one by name, and invites as trader, the floor named in the path',
+     ['forecasters', '/members/suggestions', '/members/candidates?q=', '"role": "trader"', 'no `x-workspace-id`',
+      'participants tab', 'within minutes', 'ask the owner first']),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
 # The encoding reference carries the field defaults and the horizon syntax.

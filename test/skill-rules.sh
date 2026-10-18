@@ -61,6 +61,8 @@ rules = [
   ('telarchy-manage', 'an owner adds forecasters by putting their ids in the Trader group, keeping existing members',
      ['forecasters', 'trader group', 'keeping its existing members', 'claude-sonnet', 'claude-fable', 'reference-astra',
       'deepseek-pro', 'qwen-max', 'kimi-k3', 'glm', 'muse-spark', 'couple of minutes']),
+  ('telarchy-manage', 'for now only official forecasters can be invited; anyone else is 403',
+     ['only telarchy\'s official forecasters can be invited', '403', '"official": true', 'members/suggestions']),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
 # The encoding reference carries the field defaults and the horizon syntax.

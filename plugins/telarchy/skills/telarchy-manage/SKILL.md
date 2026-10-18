@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.39.4
+version: 0.39.5
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal

@@ -1,6 +1,6 @@
 ---
 name: telarchy-propose
-version: 0.39.4
+version: 0.39.5
 description: |
   Find and draft the highest-return proposal for a Telarchy (telarchy.com)
   workspace: read the floor's metrics, definitions, readings, ballot, past
@@ -85,7 +85,7 @@ Compare the top gains with the metric's own noise (how much it moves week to wee
 
 ## 6. Draft the winner
 
-Take the top candidate and write it the way telarchy-evaluate says: bounded, ideally one where approval itself is the action, a title of at most 80 characters, and a description written for a stranger that carries your mechanism, evidence and estimate, since that is what forecasters price. If the top two or three are mutually exclusive ways of doing one thing, they are **one proposal with `options`** (`options: [{ id, label }]`), never several binary proposals: each option gets its own book, the owner compares them on one page and decides with `POST /api/proposals/<id>/approve { "option": "<id>" }`, and a decline means "none of these". Separate binaries would each price one alternative against an unspecified mix of the others. Pick `decideBy` long enough for traders to see it (days, not hours) and before the dates the effect lands on, and seed only the books where the effect lands (`liquidity: [{ metricId, targetDate, amount }]`).
+Take the top candidate and write it the way telarchy-evaluate says: bounded, ideally one where approval itself is the action, a title of at most 80 characters, and a description written for a stranger that carries your mechanism, evidence and estimate, since that is what forecasters price. If the top two or three are mutually exclusive ways of doing one thing, they are **one proposal with `options`** (`options: [{ id, label }]`), never several binary proposals: each option gets its own book, the owner compares them on one page and decides with `POST /api/proposals/<id>/approve { "option": "<id>" }`, and a decline means "none of these". Separate binaries would each price one alternative against an unspecified mix of the others. Pick `decideBy` long enough for traders to see it (days, not hours) and before the dates the effect lands on, and seed only the books where the effect lands (`liquidity: [{ metricId, targetDate, amount }]`), plus a little `approvalLiquidity` (a tenth of that, at most 100) so the chance the owner approves has a price from the start.
 
 ## 7. Present, then post on a yes
 

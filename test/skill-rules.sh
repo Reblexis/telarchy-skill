@@ -31,6 +31,13 @@ rules = [
      ['mutually exclusive', 'one proposal', 'options', '{ "option"']),
   ('telarchy-propose', 'a retried proposal post sends the same Idempotency-Key',
      ['idempotency-key', 'retry']),
+  # The approval market (telarchy-app docs/guides/approval-odds.md, 2026-10-18):
+  # nothing reaches it unless the post names approvalLiquidity, an unfunded one
+  # shows no chance anywhere, and a proposal with options has none.
+  ('telarchy-evaluate', 'approvalLiquidity funds the approval market; nothing goes there unless named; not on options',
+     ['approvalliquidity', 'approval market', 'unless you name it', 'no_approval_market']),
+  ('telarchy-propose', 'a little approvalLiquidity gives the chance the owner approves a price',
+     ['approvalliquidity', 'chance the owner approves']),
   # Seasons have no claim step (telarchy-app docs/seasons.md, "Payment",
   # 2026-10-02): a winner is paid to the payout method on the account and
   # has 30 days from settlement to add one.

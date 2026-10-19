@@ -1,6 +1,6 @@
 ---
 name: telarchy-trading
-version: 0.39.5
+version: 0.39.6
 description: |
   Trade on Telarchy (telarchy.com) as a participant, by hand or as a bot:
   find a public workspace worth trading and read its brief (no key needed),
@@ -46,7 +46,7 @@ curl -s "https://telarchy.com/api/marketplace/<idOrSlug>/context?format=md"   # 
 - `approvedTrades` / `declinedTrades` / `trades` of zero mean nobody traded it and the number is the opening seed. Never quote an untraded price as what the crowd thinks.
 - Compare by `metricId`, never by name; two metrics on one floor can read alike.
 
-More reads, all keyless on a public floor: `GET /api/status?trends=1&markets=1` (every metric, its trend and open markets in one call), `GET /api/metrics/<id>/logs` (every reading), `GET /api/predictions/markets/<id>/context` (formula, history, the owner's update notes, related horizons), `GET /api/marketplace/<idOrSlug>/announcements`, `GET /api/marketplace/<idOrSlug>/comments?marketId=<id>`, `GET /api/data-room/actions?workspace=<slug>&kinds=trade` (is anyone trading here?). On Telarchy's own floor also read `GET /api/data-room/planned`: what the owner committed to and by when.
+More reads, all keyless on a public floor: `GET /api/status?trends=1&markets=1` (every metric, its trend and open markets in one call), `GET /api/metrics/<id>/logs` (every reading), `GET /api/predictions/markets/<id>/context` (formula, history, the owner's update notes, related horizons), `GET /api/marketplace/<idOrSlug>/announcements`, `GET /api/marketplace/<idOrSlug>/metrics/<metricId>/timeline` (one number's readings and every market on it, open and settled, each with its price over time: how sharp this floor's calls have been; `GET /api/marketplace/<idOrSlug>/timeline` names the numbers that have one), `GET /api/marketplace/<idOrSlug>/comments?marketId=<id>`, `GET /api/data-room/actions?workspace=<slug>&kinds=trade` (is anyone trading here?). On Telarchy's own floor also read `GET /api/data-room/planned`: what the owner committed to and by when.
 
 ## 2. Get an identity, and money
 

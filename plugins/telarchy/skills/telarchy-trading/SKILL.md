@@ -112,13 +112,15 @@ Also: you hold one net side per market (buying the opposite side redeems matched
 
 ```bash
 -d '{"marketId":"<id>","distribution":{"quantiles":{"0.05":22000,"0.5":63000,"0.95":170000}},"maxBudget":40}'
+# or one range, Yes or No, spending credits (outcome = index in distribution.buckets)
+-d '{"marketId":"<id>","outcome":12,"side":"yes","spend":20}'
 # or a range: each share pays 1 credit if the reading lands in [lo, hi); null opens onto a tail
 -d '{"marketId":"<id>","range":[50000,100000],"amount":20}'
 # sell one bucket, or everything
 -d '{"marketId":"<id>","sell":{"bucket":23,"shares":10}}'
 ```
 
-`targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and limit orders are refused with `400 distribution_book`. Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.
+`targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and limit orders are refused with `400 distribution_book`. Holding shares on every range is redeemed at once at 1 credit a set (`redeemed`). Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.
 
 ## 5. Limit orders: conviction on a thin book
 

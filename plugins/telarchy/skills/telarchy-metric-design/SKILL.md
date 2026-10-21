@@ -1,6 +1,6 @@
 ---
 name: telarchy-metric-design
-version: 0.39.7
+version: 0.40.0
 description: |
   Decide what a Telarchy (telarchy.com) workspace should measure, following
   Telarchy's own doctrine, and encode it so the markets price the right
@@ -60,6 +60,7 @@ For each metric, draft these and show them together:
 - **Settlement: who produces the reading, and when.** Ask before choosing a horizon.
   - *Machine-read on a clock* (a sync from Stripe, analytics, a database): a dated horizon, with the sync pushing before each boundary.
   - *Person-reported* (a rating, a judgment, a check-in someone has to remember): manual settlement. The horizon is `until-settled`, which the owner settles with `POST /api/metrics/:id/settle { value, reason }` once the reading exists, and the metric has `resolvesNaUntilMeasured: true` with no `value` in the create call, so any dated book voids and refunds rather than settling on a placeholder. A person-rated metric on a clock with a placeholder 0 once settled every book on that 0, 48 minutes before the rating arrived.
+- **Shape**: a number whose spread matters as much as its middle, especially one that spans orders of magnitude (views, downloads, a launch's signups), gets `marketShape: "distribution"` with `marketScale: "log"` and a `marketRangeMin` above 0: its books then price the whole curve (median, 50% and 90% ranges) instead of one value. Everything else keeps the default binary book.
 - **Source and cadence**: where the reading comes from and how often it is pushed; a result that has no value until it happens gets N/A handling or `opensAt`, never an invented neutral reading. N/A is not zero.
 - **Liquidity**: what each book opens with (the 0.5-credit default is a trap: if a 5-credit trade moves consensus more than a fifth of the range, it is too thin).
 

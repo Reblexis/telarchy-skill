@@ -1,6 +1,6 @@
 ---
 name: telarchy-trading
-version: 0.39.7
+version: 0.40.0
 description: |
   Trade on Telarchy (telarchy.com) as a participant, by hand or as a bot:
   find a public workspace worth trading and read its brief (no key needed),
@@ -107,6 +107,18 @@ Four habits, each learned from real losses:
 Also: you hold one net side per market (buying the opposite side redeems matched pairs at 1 credit, reported as `redeemed`); `closed` markets accept only sells, `resolved` and `voided` nothing; trades are limited to 150 a minute.
 
 **A bot's loop:** read prices, compute your estimate and a confidence, trade only when `|consensus - estimate|` beats a threshold that grows with uncertainty and thinness, send the edge of that threshold as `limit`, cap each cycle's spend, and say why in a comment when it would help the owner or the next trader. Starter bots: `GET /api/guides/build-agent`, `GET /api/guides/recipes`; a stdlib Python client is https://github.com/Reblexis/telarchy-python.
+
+**Distribution books.** A market with `shape: "distribution"` prices the whole curve of its number, not one value: its read carries `distribution` (`buckets` with `lo`, `hi`, `p`; `median`; `ranges.p50`, `ranges.p90`), and `consensus` is the median. Send what you believe as quantiles; the book buys toward your curve until `maxBudget` runs out (`moved`, 0 to 1, says how far):
+
+```bash
+-d '{"marketId":"<id>","distribution":{"quantiles":{"0.05":22000,"0.5":63000,"0.95":170000}},"maxBudget":40}'
+# or a range: each share pays 1 credit if the reading lands in [lo, hi); null opens onto a tail
+-d '{"marketId":"<id>","range":[50000,100000],"amount":20}'
+# sell one bucket, or everything
+-d '{"marketId":"<id>","sell":{"bucket":23,"shares":10}}'
+```
+
+`targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and limit orders are refused with `400 distribution_book`. Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.
 
 ## 5. Limit orders: conviction on a thin book
 

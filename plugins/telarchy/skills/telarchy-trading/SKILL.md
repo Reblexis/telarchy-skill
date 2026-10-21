@@ -116,8 +116,8 @@ Also: you hold one net side per market (buying the opposite side redeems matched
 -d '{"marketId":"<id>","outcome":12,"side":"yes","spend":20}'
 # or a range: each share pays 1 credit if the reading lands in [lo, hi); null opens onto a tail
 -d '{"marketId":"<id>","range":[50000,100000],"amount":20}'
-# sell one bucket, or everything
--d '{"marketId":"<id>","sell":{"bucket":23,"shares":10}}'
+# sell a Yes on one range (or "side":"no" to sell a No the way it was bought), or everything
+-d '{"marketId":"<id>","sell":{"bucket":12,"side":"yes","shares":10}}'
 ```
 
 `targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and limit orders are refused with `400 distribution_book`. Holding shares on every range is redeemed at once at 1 credit a set (`redeemed`). Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.

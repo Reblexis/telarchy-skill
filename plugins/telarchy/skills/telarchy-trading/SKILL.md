@@ -120,7 +120,7 @@ Also: you hold one net side per market (buying the opposite side redeems matched
 -d '{"marketId":"<id>","sell":{"bucket":12,"side":"yes","shares":10}}'
 ```
 
-`targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and limit orders are refused with `400 distribution_book`. Holding shares on every range is redeemed at once at 1 credit a set (`redeemed`). Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.
+`targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and limit orders are refused with `400 distribution_book`. To file your estimate as a forecast, send the same `quantiles` to `POST /api/predictions/markets/<id>/forecasts`. Holding shares on every range is redeemed at once at 1 credit a set (`redeemed`). Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.
 
 ## 5. Limit orders: conviction on a thin book
 

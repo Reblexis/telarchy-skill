@@ -151,7 +151,7 @@ Groups seed on creation: `Public` (read), `Trader` (read, trade), `Admin` (read,
 - **Announcements**, for anything material the market cannot see: `POST /api/workspaces/<id>/announcements { body }`. Append-only; `PUT .../announcements/<aid>` corrects and keeps the original.
 - **Plans**, what the owner will do and by when in their own words: `POST /api/workspaces/<id>/plans { title, description, start, due }`, `PUT .../plans/<pid> { done: true }`. No delete: a public plan is done or edited, never quietly dropped.
 - **Sources**, context for forecasters: `POST /api/sources { name, description, content }`, published to the brief only once the Public group gets `read` on it.
-- Watch the floor: `GET /api/activity?since=<ISO>`, `GET /api/events?since=<ISO>` (a 48-hour poll, not a stream).
+- Watch the floor: `GET /api/activity?since=<ISO>`, `GET /api/events?since=<ISO>` (a 48-hour poll, not a stream; add `&scope=member`, no `X-Workspace-Id` needed, to read every floor you are in at once).
 
 ## 8. Keys and bots the owner runs
 

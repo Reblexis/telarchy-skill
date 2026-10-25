@@ -45,6 +45,8 @@ A job often crosses two: evaluating an idea for someone with no workspace yet go
 
 **Fetch the contract before you guess.** `GET /api/help` is generated from the router, so when anything here disagrees with it, it wins. The whole catalog is about 35,000 tokens, so filter it: `?section=<first path segment>` (`predictions`, `proposals`, `agents`, `marketplace`, `metrics`, `workspaces`, ...) and `?q=<terms>` (every term must appear in the method, path or description), which combine. An unknown section answers 400 listing the real ones.
 
+**Probe cheaply.** A reachability check uses `GET https://telarchy.com/api`, which reads no database. Platform aggregates from `GET /api/marketplace/stats` are cached snapshots, not a health check; search `/api/help?q=marketplace%20stats` for their freshness and fields.
+
 **The guides explain the why.** `GET /api/guides` lists them; `GET /api/guides/<section>` returns one as markdown. The ones each skill leans on are named in that skill.
 
 **Auth, three ways.** `X-Agent-Key` (a participant key, scoped), a browser session cookie (after `POST /api/auth/sign-in/email`), or `X-API-Key` (the instance's master key, operators only). A key's power is its participant's group capabilities (`read`, `trade`, `manage`, `manage_workspace`) narrowed by the key's scopes. Detail: `GET /api/guides/auth-and-keys`.

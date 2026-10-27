@@ -45,7 +45,7 @@ Create leaves first and composites second (a formula names its parts).
 | `settlementLagMinutes` | 0 | How long after a period the number is final (0 to 90 days). Markets opened afterwards settle that long after their period. |
 | `marketTitle` | null | The whole question over this metric's book, in the owner's words (at most 200 chars). |
 
-**The range.** Unset, the first value sets it: 0..2v for v > 0, -2|v|..2|v| for v < 0, 0..1000 for 0. An explicit `marketRangeMax` (and `marketRangeMin`) always wins, and a later value never moves it, so send it yourself from what the owner says the number can reach. With neither a value nor a range the metric has no market: its dates are stored and its books open the moment a value or range arrives.
+**The range.** Unset, the first value sets it: 0..2v for v > 0, -2|v|..2|v| for v < 0, 0..1000 for 0. An explicit `marketRangeMax` (and `marketRangeMin`) always wins, and a later value never moves it, so send it yourself from what the owner says the number can reach. With neither a value nor a range it gets 0 to 100 and its books open at once.
 
 There is no `target`, `granularity` or `unit`. A goal line is a market, not a field. Order is set with `POST /api/metrics/reorder` (an array of ids); the headline is the furthest-resolving open market, ties to the lower order.
 

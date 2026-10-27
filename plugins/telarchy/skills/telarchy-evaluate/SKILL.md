@@ -1,6 +1,6 @@
 ---
 name: telarchy-evaluate
-version: 0.41.1
+version: 0.41.2
 description: |
   Take an idea, plan or decision and get it priced on Telarchy
   (telarchy.com): find the workspace whose metrics it would move (the

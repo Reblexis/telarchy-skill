@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.40.0
+version: 0.41.0
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -32,7 +32,8 @@ Base URL `https://telarchy.com/api`. Before any non-trivial call, check it in `G
 
 When the user asks to set Telarchy up, or pastes the prompt from telarchy.com, fetch the live runbook and follow it: `curl -s https://telarchy.com/api/guides/onboarding`. It is always current and it is the source of truth for the flow. Run it as a guided conversation, two or three questions a round, reflecting decisions back, deciding small things yourself. Its shape:
 
-1. **What do they want?** Run their own numbers, build a participant (then telarchy-trading), both, or just curious (give the tour, do not push signup).
+1. **What do they want?** Run their own numbers, price what they publish, build a participant (then telarchy-trading), both, or just curious (give the tour, do not push signup).
+   **When their decisions are about what they publish** (LinkedIn posts, YouTube videos, X posts, a newsletter, appearances), do the account step, then follow `curl -s https://telarchy.com/api/guides/publishing` instead of steps 2 to 7: one private space, one number per kind of item that settles when they report it, and each real choice (which draft, which title) posted as one proposal whose options are the versions, priced by the AI forecasters before they publish.
 2. **Understand the situation**, inferring from the project you are in: what the floor governs, the number they would actually defend, who participates, where the real number comes from.
 3. **Choose the metric with them** using telarchy-metric-design. Start with one number that is true and traded rather than five that are stale.
 4. **Account, then workspace, then key** (section 2).

@@ -15,6 +15,13 @@ d = sys.argv[1]
 def low(name):
     return ' '.join(open(os.path.join(d, name, 'SKILL.md')).read().lower().split())
 rules = [
+  # Someone who publishes (posts, videos, a newsletter) is set up by the
+  # publishing guide (telarchy-app docs/guides/publishing.md, 2026-10-27):
+  # one until-settled number per kind of item, each decision one options proposal.
+  ('telarchy-manage', 'someone whose decisions are about what they publish follows the publishing guide',
+     ['what they publish', '/api/guides/publishing', 'linkedin']),
+  ('telarchy', 'a setup about posts or videos routes to telarchy-manage and the publishing guide',
+     ['linkedin', '/api/guides/publishing']),
   ('telarchy-metric-design', 'settlement is chosen: a person-reported metric gets manual settlement and N/A until measured',
      ['person-reported', 'until-settled', 'resolvesnauntilmeasured', 'machine']),
   ('telarchy-metric-design', 'one horizon by default; curve plus custom dates stacks markets',

@@ -84,7 +84,7 @@ fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) 
 # The encoding reference carries the field defaults and the horizon syntax.
 enc = ' '.join(open(os.path.join(d, 'telarchy-metric-design', 'references', 'encoding.md')).read().lower().split())
 for r, n in [('rolling offsets include calendar quarters +Nq (+0q this quarter, +1q next)', ['`+nq`', '+0q', '+1q', 'last month']),
-             ('the range defaults from the first value, not 1000', ['first value', '2v', '-2|v|', 'marketrangemin', 'no market'])]:
+             ('the range defaults from the first value, not 1000', ['first value', '2v', '-2|v|', 'marketrangemin', '0 to 100'])]:
     if not all(x in enc for x in n): fails.append(f'encoding.md does not state: {r}')
 if '| `marketrangemax` | `1000` |' in enc: fails.append('encoding.md still says marketRangeMax defaults to 1000')
 if '| `value` | `0` |' in enc: fails.append('encoding.md still says value defaults to 0')

@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.41.1
+version: 0.41.2
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -83,7 +83,7 @@ curl -s -X POST https://telarchy.com/api/metrics -H "X-Agent-Key: $KEY" -H "X-Wo
        "value":31200,"marketRangeMax":50000,"timePreference":{"enabled":false,"customHorizons":["2026-12"]}}'
 ```
 
-**Set the range yourself** from what the owner says the number can reach (`marketRangeMax`, and `marketRangeMin` below zero). Without one the first value sets it (0 to 2v, or -2|v| to 2|v| when negative, 0 to 1000 for a zero) and a later value never moves it; with neither a value nor a range the metric has no market until one arrives.
+**Set the range yourself** from what the owner says the number can reach (`marketRangeMax`, and `marketRangeMin` below zero). Without one the first value sets it (0 to 2v, or -2|v| to 2|v| when negative, 0 to 1000 for a zero) and a later value never moves it; with neither a value nor a range it gets 0 to 100.
 
 **One horizon by default.** Ask how many dates the owner decides on; for one, send `enabled: false` and a single `customHorizons` entry, as above. The curve (`enabled: true`, 3 sampled dates by default) combined with `customHorizons` stacks markets, three plus each custom date, and every proposal opens a pair on each.
 

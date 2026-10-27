@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.40.0
+version: 0.41.0
 description: |
   Start here for anything on Telarchy (telarchy.com), the approval layer for
   actions: an owner lists the metrics they value, anyone proposes actions,
@@ -35,7 +35,7 @@ Pick by what the user wants done, then load that skill. They sit beside this one
 - **"What should we do next?" / "find the best proposal" / "highest ROI move for this floor" / "propose something that raises <metric>"**: `telarchy-propose`. It researches the floor and the subject, ranks candidate actions by expected return, and drafts the best one.
 - **"Run a loop on my floor" / "keep proposing and doing whatever raises <metric>" / "use Telarchy to reach <goal>" / agents that propose, forecast and execute**: `telarchy-loop`. Given a workspace or the metrics to maximize, it launches decentralized standing workers (makers, persistent forecasters, a decider) once, and each works on its own toward the goal until the stop condition, unattended for hours if asked, under a mandate written to its ledger (inferred when the user said not to ask).
 - **"/telarchy-session" / "let's work on my metrics" / "find the best moves for <metric> and put them up", with the user present**: `telarchy-session`. It opens with the user naming the metrics to improve this session, finds them on a workspace or opens a new one, then in rounds ranks the highest-return actions by the user's preferences, posts the ones they pick, and leaves each decision to them on its price. It composes metric-design, manage, propose and evaluate; telarchy-loop is its unattended counterpart.
-- **"Set up Telarchy" / "create a workspace" / approve, decline, fund, members, settings, keys, sync the numbers**: `telarchy-manage`. The owner's side. A pasted prompt from telarchy.com that says "set up Telarchy" or "You are picking up a Telarchy setup" belongs here.
+- **"Set up Telarchy" / "create a workspace" / approve, decline, fund, members, settings, keys, sync the numbers**: `telarchy-manage`. The owner's side. A pasted prompt from telarchy.com that says "set up Telarchy" or "You are picking up a Telarchy setup" belongs here. So does someone who wants their LinkedIn posts, videos or newsletter priced before they publish: telarchy-manage sends that setup to `GET /api/guides/publishing`.
 - **"What should I measure?" / "is this a good metric?" / choosing or fixing a workspace's metrics**: `telarchy-metric-design`.
 - **Trade, forecast, build or run a bot, limit orders, liquidity, seasons, credits, telemetry to /admin**: `telarchy-trading`.
 

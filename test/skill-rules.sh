@@ -15,6 +15,8 @@ d = sys.argv[1]
 def low(name):
     return ' '.join(open(os.path.join(d, name, 'SKILL.md')).read().lower().split())
 rules = [
+  ('telarchy-manage', "setup questions go one at a time through the host's question tool, with suggested answers",
+     ["host's question tool", 'one question at a time', 'suggested answers']),
   # Someone who publishes (posts, videos, a newsletter) is set up by the
   # publishing guide (telarchy-app docs/guides/publishing.md, 2026-10-27):
   # one until-settled number per kind of item, each decision one options proposal.

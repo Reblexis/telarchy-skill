@@ -24,6 +24,8 @@ rules = [
      ['never ask about credits, liquidity']),
   ('telarchy-manage', 'three decisions are suggested by the assistant itself; telarchy never suggests',
      ['suggest three', 'telarchy prices decisions; it never suggests them']),
+  ('telarchy-manage', 'in the guided setup the forecasters are invited without a step: never listed or counted',
+     ['invite the first five yourself', 'do not list them, name them or say how many']),
   ('telarchy-manage', 'the welcome says it is in early access',
      ['early access']),
   ('telarchy-manage', 'a first run welcomes them, numbers its three questions (1/3) and explains each new word once',

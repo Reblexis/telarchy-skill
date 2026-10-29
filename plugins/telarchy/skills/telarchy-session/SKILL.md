@@ -1,6 +1,6 @@
 ---
 name: telarchy-session
-version: 0.41.2
+version: 0.42.0
 description: |
   Run an attended Telarchy (telarchy.com) working session, invoked as
   /telarchy-session: the user first names the few metrics they want to

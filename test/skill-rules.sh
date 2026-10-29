@@ -15,6 +15,9 @@ d = sys.argv[1]
 def low(name):
     return ' '.join(open(os.path.join(d, name, 'SKILL.md')).read().lower().split())
 rules = [
+  # owner ask 2026-10-28: they came to decide better; ask only what cannot wait
+  ('telarchy-manage', 'setup starts with which company or project, then which decisions, and asks nothing it can decide',
+     ['which company or project', 'which decisions', 'never ask about currency']),
   ('telarchy-manage', "setup questions go one at a time through the host's question tool, with suggested answers",
      ["host's question tool", 'one question at a time', 'suggested answers']),
   # Someone who publishes (posts, videos, a newsletter) is set up by the

@@ -26,6 +26,9 @@ rules = [
      ['suggest three', 'telarchy prices decisions; it never suggests them']),
   ('telarchy-manage', 'in the guided setup the forecasters are invited without a step: never listed or counted',
      ['invite the first five yourself', 'do not list them, name them or say how many']),
+  # new-user test 2026-10-28: a proposal opened on dust liquidity with no error
+  ('telarchy-manage', 'a decision is never posted on less than it costs; when the balance cannot cover it, say so plainly',
+     ['never post a decision on less than it costs', 'cannot price a decision yet']),
   ('telarchy-manage', 'the welcome says it is in early access',
      ['early access']),
   ('telarchy-manage', 'a first run welcomes them, numbers its three questions (1/3) and explains each new word once',

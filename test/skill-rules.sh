@@ -16,8 +16,16 @@ def low(name):
     return ' '.join(open(os.path.join(d, name, 'SKILL.md')).read().lower().split())
 rules = [
   # owner ask 2026-10-28: they came to decide better; ask only what cannot wait
-  ('telarchy-manage', 'setup starts with which company or project, then which decisions, and asks nothing it can decide',
-     ['which company or project', 'which decisions', 'never ask about currency']),
+  # Viktor and Max 2026-10-29: the numbers, then where each comes from, then a
+  # first decision with three suggested; money set by defaults; early access.
+  ('telarchy-manage', 'setup asks which numbers, then where each comes from, then the first decision, and asks nothing it can decide',
+     ['which numbers', 'where each comes from', 'first decision', 'never ask about currency']),
+  ('telarchy-manage', 'money is never asked: credits, liquidity and trading are set from defaults',
+     ['never ask about credits, liquidity']),
+  ('telarchy-manage', 'three decisions are suggested by the assistant itself; telarchy never suggests',
+     ['suggest three', 'telarchy prices decisions; it never suggests them']),
+  ('telarchy-manage', 'the welcome says it is in early access',
+     ['early access']),
   ('telarchy-manage', 'a first run welcomes them, numbers its three questions (1/3) and explains each new word once',
      ['welcome them first', '(1/3)', 'explain each new word once']),
   ('telarchy-manage', 'the welcome says it helps with any decision, and that social media is only where they start',

@@ -20,6 +20,8 @@ rules = [
      ['which company or project', 'which decisions', 'never ask about currency']),
   ('telarchy-manage', 'a first run welcomes them, numbers its three questions (1/3) and explains each new word once',
      ['welcome them first', '(1/3)', 'explain each new word once']),
+  ('telarchy-manage', 'the welcome says it helps with any decision, and that social media is only where they start',
+     ['social media, their company, a personal goal', 'not all it does']),
   ('telarchy-manage', 'social media is recommended first, so nobody has to share revenue to start',
      ['social media first', 'only when they offer']),
   ('telarchy-manage', "setup questions go one at a time through the host's question tool, with suggested answers",

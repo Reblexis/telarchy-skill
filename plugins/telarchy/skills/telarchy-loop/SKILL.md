@@ -1,6 +1,6 @@
 ---
 name: telarchy-loop
-version: 0.43.0
+version: 0.43.1
 description: |
   Run Telarchy (telarchy.com) as an unattended goal loop of decentralized
   standing workers while the owner is away for hours. Given a
@@ -157,6 +157,12 @@ Every worker runs the same outer loop until the stop condition: **read the stop 
 3. Ship through the **one merge path** chosen in preflight (direct rebase onto `main` where pushes are allowed, otherwise a PR per branch; a refused push to `main` is the enforcement, not an obstacle), then append a line to the **deliveries log** so the owner has one current build to try. When several approved branches must be tried together, the maker that finishes last rebases onto the others and runs the whole test suite (the **integration** step), so there is always **one build**.
 4. When its proposal is declined or lapses, read why, and propose again on the next pass.
 5. Otherwise, trade other makers' pending proposals and the baseline books where it believes the price is wrong (never one it drafted or will build), then wait.
+
+**Proposer-style maker (an option, not the rule).** Any maker may be given this step 1 instead, so one loop can compare it with makers on the default; name which in the ledger. It is how a standing proposal agent picks its one daily proposal, and it keeps a maker from running dry once the obvious ideas are taken:
+
+- Write **at least 50 candidate** actions, from every metric and from far outside what the floor already holds, each as its **effects**: per metric moved, the change in that metric's own units, the day it starts, the days it takes to reach full size, the day it ends (or never), and what it displaces as negative effects. The estimate assumes the work is done; plans changing are a later start or a smaller effect, never a discount for unwillingness. What lands after the books' dates counts nothing.
+- Rank them with one small script that values each candidate at the books' dates with the **same formula as the decision rule** (section 6), so what the maker ranks first is what the decider would approve; never add points by hand, and check a surprising rank's effects rather than its number. Keep the whole ranked list in the loop directory.
+- **Posts the highest-scoring** candidate it can build within the execution scope that is not pending, not **declined in the same form**, and does not overlap another maker's pending or delivered work. Its description is the mechanism behind each effect, cited by file or proposal number, the cost, and what stays for the user. A decline reason is applied to every later list.
 
 **Forecaster** (prices, for its own profit):
 

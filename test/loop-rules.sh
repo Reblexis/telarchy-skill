@@ -128,6 +128,15 @@ rules = {
     ['drafted or will build'],
   'forecasters profit only from being right':
     ['only from being right'],
+  # Proposer-style makers (Viktor, 2026-10-30: "for proposer/suggestor agents
+  # take inspirationf ro the proposal agent for vcihal/telarchy similar
+  # prompoting", then "it could be jsut one of the proposing agents").
+  'a maker may run proposer-style, as an option and not the rule for every maker':
+    ['proposer-style', 'option'],
+  'a proposer-style maker writes at least 50 candidates as effects and ranks them by a score matching the decision rule':
+    ['at least 50 candidate', 'effects', 'same formula as the decision rule'],
+  'a proposer-style maker posts the best candidate it can build, not one already pending or declined in the same form':
+    ['posts the highest-scoring', 'declined in the same form'],
 }
 fails = [name for name, needles in rules.items() if not all(n in low for n in needles)]
 for name in fails:

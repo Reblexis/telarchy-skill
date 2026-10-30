@@ -26,6 +26,10 @@ rules = [
      ['suggest three', 'telarchy prices decisions; it never suggests them']),
   ('telarchy-manage', 'in the guided setup the forecasters are invited without a step: never listed or counted',
      ['invite the first five yourself', 'do not list them, name them or say how many']),
+  # Viktor 2026-10-30, after his own run: "it says it didnt find any public post .."; LinkedIn, X,
+  # Instagram and TikTok show servers only a login wall, so their numbers come from the person.
+  ('telarchy-manage', 'linkedin and x numbers are told by the person, and past numbers nobody can read are asked once',
+     ['show nothing to a server', 'they tell you', 'ask once, in a few words']),
   # new-user test 2026-10-28: a proposal opened on dust liquidity with no error
   ('telarchy-manage', 'a decision is never posted on less than it costs; when the balance cannot cover it, say so plainly',
      ['never post a decision on less than it costs', 'cannot price a decision yet']),

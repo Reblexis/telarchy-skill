@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.43.3
+version: 0.43.4
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -39,7 +39,7 @@ When the user asks to set Telarchy up, or pastes the prompt from telarchy.com, f
 4. **Account, then workspace, then key** (section 2).
 5. **Put the metric on, with a horizon**, then **fund its books** (sections 3 and 4). Ask who produces the reading and when, and choose settlement from that (section 3). A metric with no horizon opens no market; a market with no money refuses every trade.
 6. **Wire the number** (section 3), set permissions and what traders see (sections 6 and 7).
-7. **The first decision** is question (3/3) above: post the one they picked, with a small subsidy so it trades, and never approve it yourself.
+7. **The first decision** is question (3/3) above: post the one they picked, with a small subsidy so it trades, and never approve it yourself. Write each version whole from what they told you, never with [brackets] for details they lack, and post it now. The reply's `openedWith` says what each book opened with; never add liquidity to an option on top of it without their yes.
 8. **Hand off in writing:** the floor URL, what exists, where each key lives and what it can do, the sync plan, what waits for their decision, and their exits (`GET /api/auth/me/export`, `DELETE /api/workspaces/:id`, account deletion in the browser).
 
 Before they commit, fetch `GET /api/legal/terms` and `GET /api/legal/privacy` and summarise them. Never invent an email, a password or a metric value.

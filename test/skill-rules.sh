@@ -107,6 +107,12 @@ rules = [
      ['only telarchy\'s official participants (its forecasters and its suggester) can be invited', '403', '"official": true', 'members/suggestions']),
   ('telarchy-manage', 'the guided setup adds the suggester with no question, says so once, and removing it stops it',
      ['"participantid": "telarchy-proposer"', 'no question to the person', 'costs them nothing', 'role: "none"']),
+  ('telarchy-manage', "a decision's options are never funded again without a yes: openedWith says what each opened with",
+     ['`openedwith`', 'never add liquidity to an option', 'without their yes']),
+  ('telarchy-manage', 'a version is written whole and priced now, never held with brackets',
+     ['never with [brackets]', 'post it now']),
+  ('telarchy-evaluate', 'the proposal reply names openedWith',
+     ['openedwith']),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
 # The encoding reference carries the field defaults and the horizon syntax.

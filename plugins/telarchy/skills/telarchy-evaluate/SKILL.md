@@ -1,6 +1,6 @@
 ---
 name: telarchy-evaluate
-version: 0.43.3
+version: 0.43.4
 description: |
   Take an idea, plan or decision and get it priced on Telarchy
   (telarchy.com): find the workspace whose metrics it would move (the
@@ -100,7 +100,8 @@ curl -s -m 40 -X POST https://telarchy.com/api/proposals \
   -d '{"title":"Spend $5,000 on one named channel over 30 days","description":"...",
        "decideBy":"2026-10-02T18:00:00Z",
        "liquidity":[{"metricId":"<id>","targetDate":"2026-10","amount":150}],"approvalLiquidity":30}'
-# 201 { id, number, conditionalMarketIds, liquiditySubsidy, approvalLiquidity, options }
+# 201 { id, number, conditionalMarketIds, liquiditySubsidy, liquidity, approvalLiquidity, openedWith, options }
+# openedWith: { <marketId>: credits each book opened with, from every purse }; liquiditySubsidy and liquidity echo only your own seed
 curl -s "https://telarchy.com/api/proposals/<id>" -H "X-Workspace-Id: $WS"   # markets[]: approved, declined, delta, baselineConsensus
 ```
 

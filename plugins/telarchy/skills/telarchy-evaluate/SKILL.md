@@ -1,6 +1,6 @@
 ---
 name: telarchy-evaluate
-version: 0.43.5
+version: 0.43.6
 description: |
   Take an idea, plan or decision and get it priced on Telarchy
   (telarchy.com): find the workspace whose metrics it would move (the
@@ -86,7 +86,7 @@ The market's job is to price the **outcome**. Every doubt about whether the acti
 
 - **`decideBy`** (an ISO instant) is when the owner must decide. It defaults to the floor's `decisionMinutes` (one day) and **can never be moved** after posting. A market needs people to see it, so a proposal due in minutes is decided on its opening seed, which is nothing. Give an idea that needs real pricing days, not hours. Only books whose date settles after `decideBy` get a pair.
 - **Seed the books, or there is no price.** A proposal is the proposer's to fund: with no seed its books open empty and the floor says "no price yet" (unless the owner set a per-date `proposalOpensWith`, read from `markets[]`). Fund only the books the argument is about with `liquidity: [{ metricId, targetDate, amount }]`: `amount` goes into each branch of that metric and date, so the bill is `amount x 2` per book (x the option count on an option proposal). `liquiditySubsidy` instead puts the same amount into every book, which is often many more than expected. Pick books whose `proposalOpensWith` is not null and whose `periodEndsOn` is after your `decideBy`. Payment comes from liquidity credits first, trading credits second, and trading credits in a pool count against the user's profit and season score until they come back. A few hundred credits on the one or two books that matter reads far better than a thin spread over twenty.
-- **A little for the approval market too.** An approve-or-decline proposal also has an approval market, the chance the owner approves it (`approvalMarket` on `GET /api/proposals/<id>`), and nothing goes there unless you name it: `approvalLiquidity: N` puts N credits into it in the same post, paid the same way and refused with everything else if the whole bill cannot be paid. Unfunded, it shows no chance to anyone. The site's own forms put a tenth of the books, at most 100, there. A proposal with `options` has none, and `approvalLiquidity` above 0 on one is a 400 `no_approval_market`.
+- **A little for the approval market too.** On an approve-or-decline proposal with a deadline, `approvalLiquidity: N` with N > 0 opens the approval market, the chance the owner approves it (`approvalMarket` on `GET /api/proposals/<id>`), with N credits in the same post, paid the same way and refused with everything else if the whole bill cannot be paid. With 0 or absent, there is no approval market (`approvalMarket: null`), and you cannot open one later. The site's own forms put a tenth of the books, at most 100, there. A proposal with `options` or without a deadline has none; `approvalLiquidity` above 0 on either is a 400 `no_approval_market`.
 - **`askUsd`** only when the user wants to be paid for doing the work on someone else's floor. It needs payout details on the account (`POST /api/auth/profile { payoutMethod }`) or `payoutHandle` in the body, and on a floor whose money metric says "net", the approved branch opens lower by the ask. Approval makes the ask owed.
 
 ## 6. Confirm, post, read the answer

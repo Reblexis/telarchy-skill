@@ -14,35 +14,37 @@ import sys, os
 d = sys.argv[1]
 def low(name):
     return ' '.join(open(os.path.join(d, name, 'SKILL.md')).read().lower().split())
+forbidden = [
+  ('telarchy-manage', ['recommend social media first', '(1/3)', 'three questions', 'they start with social media']),
+]
 rules = [
   ('telarchy-manage', 'report history repeats identical timestamp/value readings only once before the 500-point limit',
      ['500 distinct', '(at, value)', 'before the limit', 'different values at the same time']),
-  # owner ask 2026-10-28: they came to decide better; ask only what cannot wait
-  # Viktor and Max 2026-10-29: the numbers, then where each comes from, then a
-  # first decision with three suggested; money set by defaults; early access.
-  ('telarchy-manage', 'setup asks which numbers, then where each comes from, then the first decision, and asks nothing it can decide',
-     ['which numbers', 'where each comes from', 'first decision', 'never ask about currency']),
-  ('telarchy-manage', 'money is never asked: credits, liquidity and trading are set from defaults',
-     ['never ask about credits, liquidity']),
-  ('telarchy-manage', 'three decisions are suggested by the assistant itself; telarchy never suggests',
-     ['suggest three', 'telarchy prices decisions; it never suggests them']),
-  ('telarchy-manage', 'in the guided setup the forecasters are invited without a step: never listed or counted',
-     ['invite the first five yourself', 'do not list them, name them or say how many']),
+  # Decision def7fa20f819 (2026-11-10, task 1144): the agent path copies the
+  # setup chat. It answers first, offers forecasts once naming the credits, and
+  # the yes puts the decision up in one call; no social-first default, no fixed
+  # three questions.
+  ('telarchy-manage', 'setup answers their question first, with its own estimate per option, labelled as its own',
+     ['answer their question first', 'rough estimate for each option', 'label it as yours']),
+  ('telarchy-manage', 'forecasts are offered once, naming the credits, and the yes is the yes to the money',
+     ['offer forecasts once', 'naming the credits', 'never spend more than they said yes to']),
+  ('telarchy-manage', 'the yes puts the decision up in one call',
+     ['post /api/decisions', 'one call']),
+  ('telarchy-manage', 'it asks nothing it can decide',
+     ['never ask about currency', 'they never name a metric']),
+  ('telarchy-manage', 'the suggestions are the assistant\'s own; telarchy never suggests',
+     ['telarchy prices decisions; it never suggests them']),
   # Viktor 2026-10-30, after his own run: "it says it didnt find any public post .."; LinkedIn, X,
   # Instagram and TikTok show servers only a login wall, so their numbers come from the person.
   ('telarchy-manage', 'linkedin and x numbers are told by the person, and past numbers nobody can read are asked once',
      ['show nothing to a server', 'they tell you', 'ask once, in a few words']),
   # new-user test 2026-10-28: a proposal opened on dust liquidity with no error
   ('telarchy-manage', 'a decision is never posted on less than it costs; when the balance cannot cover it, say so plainly',
-     ['never post a decision on less than it costs', 'cannot price a decision yet']),
-  ('telarchy-manage', 'the welcome says it is in early access',
+     ['cannot price a decision yet']),
+  ('telarchy-manage', 'the offer says it is in early access',
      ['early access']),
-  ('telarchy-manage', 'a first run welcomes them, numbers its three questions (1/3) and explains each new word once',
-     ['welcome them first', '(1/3)', 'explain each new word once']),
-  ('telarchy-manage', 'the welcome says it helps with any decision, and that social media is only where they start',
-     ['social media, their company, a personal goal', 'not all it does']),
-  ('telarchy-manage', 'social media is recommended first, so nobody has to share revenue to start',
-     ['social media first', 'only when they offer']),
+  ('telarchy-manage', 'each new word is explained once',
+     ['explain each new word once']),
   ('telarchy-manage', "setup questions go one at a time through the host's question tool, with suggested answers",
      ["host's question tool", 'one question at a time', 'suggested answers']),
   # Someone who publishes (posts, videos, a newsletter) is set up by the
@@ -121,6 +123,7 @@ rules = [
      ['openedwith']),
 ]
 fails = [f'{s} does not state: {r}' for s, r, n in rules if not all(x in low(s) for x in n)]
+fails += [f'{s} still says: {x}' for s, xs in forbidden for x in xs if x in low(s)]
 # The encoding reference carries the field defaults and the horizon syntax.
 enc = ' '.join(open(os.path.join(d, 'telarchy-metric-design', 'references', 'encoding.md')).read().lower().split())
 for r, n in [('rolling offsets include calendar quarters +Nq (+0q this quarter, +1q next)', ['`+nq`', '+0q', '+1q', 'last month']),

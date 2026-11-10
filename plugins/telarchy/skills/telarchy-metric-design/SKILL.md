@@ -1,6 +1,6 @@
 ---
 name: telarchy-metric-design
-version: 0.43.6
+version: 0.43.7
 description: |
   Decide what a Telarchy (telarchy.com) workspace should measure, following
   Telarchy's own doctrine, and encode it so the markets price the right
@@ -23,7 +23,7 @@ allowed-tools:
 
 # Designing Telarchy metrics
 
-Everything downstream runs on this choice. The market prices what the owner listed, every proposal is priced against it, and the owner approves on that price. The system faithfully optimizes whatever it is given, so a badly chosen metric produces a confident number about the wrong thing, which is worse than no number. The canonical text is the live guide, `GET https://telarchy.com/api/guides/metric-design`; read it at the start of any real design session. This skill is how to apply it.
+Everything downstream runs on this choice. The market prices what the owner listed, every proposal is priced against it, and the owner approves on that price. The system faithfully optimizes whatever it is given, so a badly chosen metric produces a confident number about the wrong thing, which is worse than no number. The canonical text is the live guide, `GET https://telarchy.com/api/guides/metric-design`; read it at the start of any real design session. It is one of Telarchy's decision guides, each read the same way and each also a page at `https://telarchy.com/guides/<name>`: `metric-design` (which number, for which situation), `horizons` (which date a number is read on), `decision-design` (what is worth a forecast, the options, reading the result), `funding` (how many credits go behind a decision, and what comes back) and `knowledge-base` (what a space should know). Read `horizons` before setting a date and `decision-design` before the first proposal. This skill is how to apply them.
 
 Your output is a **proposed set of metrics, written out in plain words, that the owner confirms**. You propose; they decide. Nothing is created until they say yes to the set in its final form, and a reply shaped like a question ("I think X, no?") opens a discussion rather than approving anything.
 

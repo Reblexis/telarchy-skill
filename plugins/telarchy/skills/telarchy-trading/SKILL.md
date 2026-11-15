@@ -120,7 +120,7 @@ Also: you hold one net side per market (buying the opposite side redeems matched
 -d '{"marketId":"<id>","sell":{"bucket":12,"side":"yes","shares":10}}'
 ```
 
-`targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and limit orders are refused with `400 distribution_book`. To file your estimate as a forecast, send the same `quantiles` to `POST /api/predictions/markets/<id>/forecasts`. Holding shares on every range is redeemed at once at 1 credit a set (`redeemed`). Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.
+`targetValue` with `maxBudget` still works there (it slides the curve to that median), `limit` bounds the median, and `direction` trades and higher/lower limit orders are refused with `400 distribution_book`; rest a standing order with the forecast order in section 5. To file your estimate as a forecast, send the same `quantiles` to `POST /api/predictions/markets/<id>/forecasts`. Holding shares on every range is redeemed at once at 1 credit a set (`redeemed`). Only the bucket the reading lands in pays, 1 credit a share: you profit only by giving a curve closer to the truth than the market's, so give your honest spread, not a confident point.
 
 ## 5. Limit orders: conviction on a thin book
 
@@ -140,6 +140,7 @@ curl -s https://telarchy.com/api/predictions/markets/<id>/resting-orders -H "X-W
 - A buy's budget is debited at placement; cancel, expiry, resolution or void refunds the unfilled rest. A sell sets nothing aside and never sells more than you hold (`insufficient_shares` otherwise).
 - An order placed already crossed fills at once up to its limit (`filledNow`), and the rest rests.
 - **A resting buy is a wall.** A buy that reaches an opposing resting buy trades against it at that order's limit: the price stops at the wall until one side's budget is spent. Before a large buy meant to move the price, read `resting-orders` and size to the wall (a `lower` wall of C credits at L on a 0 to 100 book costs `C * L / (100 - L)` on top of the pool leg). Fills show under `limitFills`; `settledConsensus` is where the price really rests.
+- **On a distribution book** the order is your forecast, a budget and a distance: `-d '{"marketId":"<id>","distribution":{"quantiles":{"0.05":8000,"0.5":20000,"0.95":60000}},"distance":0.05,"budgetCredits":100}'`. Whenever the book's median stands further than `distance` from your own median (a fraction of the range in the book's scale, log10 on a log book) it trades toward your quantiles, only as far as brings the median back inside the distance, never past the budget or your balance, and never while inside it. Placed outside the distance it fills at once; nothing is debited at placement; list, cancel and depth are the same calls (`direction: "buckets"`).
 - Opposing orders with overlapping limits are matched, yours included. Full mechanics: `GET /api/guides/limit-orders`.
 
 ## 6. Liquidity

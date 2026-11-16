@@ -1,13 +1,12 @@
 ---
 name: telarchy-metric-design
-version: 0.43.8
+version: 0.43.9
 description: |
-  Decide what a Telarchy (telarchy.com) workspace should measure, following
-  Telarchy's own doctrine, and encode it so the markets price the right
-  thing: the genie test, outcomes not activities, a metric is a commitment
-  and a proposal is a hypothesis, objectively resolvable definitions that
-  read as settlement text, numbers a proposal can move but a trader cannot,
-  money and "net" naming, range, one horizon by default, settlement
+  Decide what a Telarchy (telarchy.com) workspace should measure, by the
+  guide Telarchy's own chat follows (GET /api/guides/read-first), and encode
+  it so the markets price the right thing: definitions that read as
+  settlement text, numbers a proposal can move but a trader cannot, money
+  and "net" naming, range, one horizon by default, settlement
   (machine-read on a clock, or person-reported and settled by hand), levels vs
   per-period numbers, formulas, N/A, and how to change or retire a metric
   without voiding people's positions. Use it whenever someone is choosing,
@@ -23,32 +22,20 @@ allowed-tools:
 
 # Designing Telarchy metrics
 
-Everything downstream runs on this choice. The market prices what the owner listed, every proposal is priced against it, and the owner approves on that price. The system faithfully optimizes whatever it is given, so a badly chosen metric produces a confident number about the wrong thing, which is worse than no number. The canonical text is the live guide, `GET https://telarchy.com/api/guides/metric-design`; read it at the start of any real design session. It is one of Telarchy's decision guides, each read the same way and each also a page at `https://telarchy.com/guides/<name>`: `metric-design` (which number, for which situation), `horizons` (which date a number is read on), `decision-design` (what is worth a forecast, the options, reading the result), `funding` (how many credits go behind a decision, and what comes back) and `knowledge-base` (what a space should know). Read `horizons` before setting a date and `decision-design` before the first proposal. This skill is how to apply them.
+Everything downstream runs on this choice: the market prices what the owner listed, and every proposal is priced against it. **What to measure is taught by one text, `GET https://telarchy.com/api/guides/read-first`**: the rules and worked examples Telarchy's own chat follows, served from the same source as the chat's prompt. Read it before you propose anything and follow it; this skill adds only how to encode the result on the API and how to change a metric people already trade.
 
-Your output is a **proposed set of metrics, written out in plain words, that the owner confirms**. You propose; they decide. Nothing is created until they say yes to the set in its final form, and a reply shaped like a question ("I think X, no?") opens a discussion rather than approving anything.
+Your output is a **proposed metric, written out in plain words, that the owner confirms**. You propose; they decide. Nothing is created until they say yes to it in its final form, and a reply shaped like a question ("I think X, no?") opens a discussion rather than approving anything.
 
-## 1. Find what they actually value
+## 1. Choose by the guide
 
-Start from terminal goals, not from what is easy to count. Read the project you are in (README, the business, the data) and ask only what you cannot infer: what does this floor govern, what outcome would the owner defend in an argument, over what timescale, and where does each real number live. If they have ranked goals, keep the ranking; it decides which metric leads.
+Read the project you are in (README, the business, the data) and ask only what you cannot infer. Then choose by the guide: start with one metric, and add one only when the owner would choose against what the first says.
 
-A workspace usually needs **several** metrics, not "one number": a company cares about more than one thing, and a single metric is exactly the missing-dimension failure below. On a floor that is priced in public, keep it to **three or four at most** (fewer means more liquidity behind each book and fewer dead proposal pairs). Start the market on the one or two that are true and synced today, rather than five that go stale.
+## 2. On a floor other people trade
 
-## 2. Test every candidate
+Two tests the guide does not need for a private space matter once outsiders trade it:
 
-Run each candidate through these, in order. Most bad metrics fail the first three.
-
-1. **The genie test.** Assume a perfectly competent optimizer that delivers precisely what the definition says, not what was meant. If every metric here were maximized perfectly, walk through the world that produces. Is it the outcome they want? It comes back no in three shapes: a **missing dimension** (something they care about is nowhere, so nothing protects it), a **proxy satisfiable on its own** (revenue up, business hollowed out; a rate up because the denominator was gamed), a **trade-off they would never endorse** (a formula lets one part collapse while another overcompensates). Fix the definition until perfect achievement of it is exactly the outcome.
-2. **Outcome, not activity.** Lines of code, tickets closed, features shipped, posts published, hours worked, followers, views, "engagement": track the activity and you get more activity. The test: *would they still want this if it caused nothing else?* If not, it is instrumental. A belief that an activity causes the outcome is a **proposal** ("will doing X move Y?"), which the market can price; a metric is a **commitment** that this quantity certainly matters.
-3. **What the decision does, not what the options are.** A decision between options is judged by what happens to the person after they take it. A figure you can look up for each option today (a spec, a price, a salary, years of updates promised, a range, a rating) needs no forecast: it is evidence the forecasters read. Buying a phone to last is judged by the years until they buy the next one, not the years of security updates promised; two job offers by how glad they are of the job a year in, not the salary; an ad budget by profit, not clicks. Start from their own words for what they want and make those words a reading of them. An outcome that takes years keeps its horizon; a budget or deadline narrows the options and is not the number.
-4. **The level of abstraction they are sure of.** A self-reported happiness score is a better leaf than a dopamine reading, because the link between them is the uncertain part. Subjective metrics are legitimate when the feeling is the point: say so with a `(self-reported)` tail and a description that admits it is a gut read.
-5. **Objectively resolvable.** Someone was paid or not paid on this number. Anyone with the data must land on the same value. A number a machine publishes beats one a person types, because nobody has to trust the person.
-6. **A proposal can move it within its horizon.** A number nothing on the floor can move in the priced window (an implied valuation before a round closes) gives every proposal flat, dead books and forecasters nothing to be paid for.
-7. **Traders cannot move it by trading it, and cannot cheaply ruin it.** A number that reads market prices lets traders move what they are scored on. Where the people who trade a floor also act on it (a game decided by the market), check whether making the outcome worse is cheaper than making it better; if so, someone will short it and do the work badly.
-8. **Hard to farm.** Any count of heads is farmable at the price of a head, so the price of a head is the whole design: count net exposure rather than activity, roll bots up to their owner, exclude house accounts. Keep it as simple as possible while staying robust.
-9. **Readable before the end.** An outcome that has a reading only at the end (a lifespan at death, whether a shop survives) settles no forecast while it can still guide anything. Measure its state on a date as 1 or 0: "Alive", 1 while alive and 0 when not, whose price is the chance of being alive then, on the date when that is genuinely uncertain for the person (around 85 for a young adult). Ten years on it is near 1 whatever they do, and a book that every option prices the same separates nothing: then judge by a near marker the options move (blood pressure, fitness), named "(proxy)". A number the owner names gets these tests too: when it fails one, say why in one sentence and offer the better design.
-10. **Readable scale.** Prefer a bounded number (a percentage, a win rate) over an unbounded raw count when both carry the same meaning.
-
-Then check the set as a whole: different timescales are **sibling metrics** with their own half-lives, not one metric trying to mean both; different audiences are **different workspaces**; do not wire one workspace's metrics into another's formula (the link is the uncertain part, so test it with a proposal). Double counting is fine only when deliberate.
+- **Traders cannot move it by trading it, and cannot cheaply ruin it.** A number that reads market prices lets traders move what they are scored on. Where the people who trade a floor also act on it, check whether making the outcome worse is cheaper than making it better.
+- **Hard to farm.** Any count of heads is farmable at the price of a head: count net exposure rather than activity, roll bots up to their owner, exclude house accounts.
 
 ## 3. Write each one down
 
@@ -70,9 +57,9 @@ Field names, formula grammar, horizon syntax and the exact API calls are in `ref
 
 ## 4. Present, confirm, then encode
 
-Show the owner the set as a short list: each metric's name, one-line definition, why it passes the genie test, what proposal could move it, and its horizons. Say what you deliberately left out and why (activities you turned into proposal ideas are worth listing: they are the floor's first proposals). Wait for an explicit yes on the final form. Then create or edit with telarchy-manage (or the calls in `references/encoding.md`), and fund the books.
+Show the owner the metric: its name, one-line definition, the rule of the guide it rests on, what proposal could move it, and its horizons. Say what you deliberately left out and why (activities you turned into proposal ideas are worth listing: they are the floor's first proposals). Wait for an explicit yes on the final form. Then create or edit with telarchy-manage (or the calls in `references/encoding.md`), and fund the books.
 
-Templates seed metrics so nobody starts blank, but several are activities or vanity numbers (weekly hours, pieces published, stars, views) and per-period names. Review a template's metrics with these tests instead of keeping them by default.
+Templates seed metrics so nobody starts blank, but several are activities or vanity numbers (weekly hours, pieces published, stars, views) and per-period names. Review a template's metrics by the guide instead of keeping them by default.
 
 ## 5. Changing a metric that is already traded
 

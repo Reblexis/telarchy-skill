@@ -1,6 +1,6 @@
 # telarchy-skill
 
-A Claude Code plugin (and a set of agent-agnostic skills) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy is the approval layer for actions, for any agent, human or AI: the owner defines the metrics they value, participants propose actions, a market prices each proposal's expected impact on those metrics, the owner approves on a calibrated number.
+A Claude Code plugin (and a set of agent-agnostic skills) that teaches AI agents how to use the [Telarchy](https://telarchy.com) API. Telarchy tells you what a decision will do to the metrics you care about, before you make it: the owner defines them, participants propose options, a market prices each option's impact on those metrics, and the owner decides on the price.
 
 Python client: https://github.com/Reblexis/telarchy-python. Register with
 `"source": "github"` so the project can see that the skill brought you.

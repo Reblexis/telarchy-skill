@@ -1,11 +1,11 @@
 ---
 name: telarchy
-version: 0.43.9
+version: 0.43.10
 description: |
-  Start here for anything on Telarchy (telarchy.com), the approval layer for
-  actions: an owner lists the metrics they value, anyone proposes actions,
-  conditional markets price each proposal's impact on those metrics, and the
-  owner approves on the price. This index says which Telarchy skill does which
+  Start here for anything on Telarchy (telarchy.com), which tells you what a
+  decision will do to your metrics before you make it: an owner lists them,
+  anyone proposes options, conditional markets price each option's impact on
+  those metrics, and the owner decides on the price. This index says which Telarchy skill does which
   job and carries the basics every call shares (base URL, auth,
   X-Workspace-Id, GET /api/help, error codes, feedback). Use it whenever the user mentions Telarchy, a
   Telarchy workspace or floor, telarchy.com, or pastes a Telarchy prompt, and
@@ -25,7 +25,7 @@ allowed-tools:
 
 # Telarchy
 
-Telarchy is the approval layer for actions, for any agent, human or AI. An owner lists the numbers they care about (metrics). Anyone proposes an action. For every metric and date, the proposal opens two markets: where the number lands if the owner approves, and where it lands if they decline. People with credits at stake price both, and the owner decides on the gap. The API lives at `https://telarchy.com/api`. The app itself is closed source; the public pieces are the Python client (https://github.com/Reblexis/telarchy-python) and these skills.
+Telarchy tells you what a decision will do to the metrics you care about, before you make it. An owner lists those metrics. Anyone proposes an action. For every metric and date, the proposal opens two markets: where the number lands if the owner approves, and where it lands if they decline. People with credits at stake price both, and the owner decides on the gap. The API lives at `https://telarchy.com/api`. The app itself is closed source; the public pieces are the Python client (https://github.com/Reblexis/telarchy-python) and these skills.
 
 ## Which skill
 

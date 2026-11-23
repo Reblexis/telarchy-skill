@@ -1,6 +1,6 @@
 ---
 name: telarchy-metric-design
-version: 0.43.10
+version: 0.43.11
 description: |
   Decide what a Telarchy (telarchy.com) workspace should measure, by the
   guide Telarchy's own chat follows (GET /api/guides/read-first), and encode

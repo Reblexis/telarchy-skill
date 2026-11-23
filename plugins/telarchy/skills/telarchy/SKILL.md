@@ -1,6 +1,6 @@
 ---
 name: telarchy
-version: 0.43.10
+version: 0.43.11
 description: |
   Start here for anything on Telarchy (telarchy.com), which tells you what a
   decision will do to your metrics before you make it: an owner lists them,

@@ -86,4 +86,4 @@ There is no `target`, `granularity` or `unit`. A goal line is a market, not a fi
 - `marketRangeMax`: applies from now on. Traded books keep their range; untraded ones respawn at the new one.
 - `timePreference`: reconciles markets (on a dropped date a traded book stays open and settles on its own date, an untraded one is voided and its pool refunded; new dates open). **Never set it to `null` on a metric with traded books or proposal pairs**: freeze it instead, with `customHorizons` set to the absolute dates its open books stand on and the curve off.
 - A new definition of a traded metric is a new metric, created beside it.
-- `DELETE /api/metrics/:id`: 409 while any traded book is open. Voiding a traded book needs `{ acknowledgeTraded: true, reason }`, published.
+- `DELETE /api/metrics/:id`: voids every open book on it and refunds each holder their net cash at stake; 409 only while a running prize season scores the workspace and a book on it is traded. To keep a traded metric's books to their dates instead, retire it by freezing. Voiding one traded book needs `{ acknowledgeTraded: true, reason }`, published.

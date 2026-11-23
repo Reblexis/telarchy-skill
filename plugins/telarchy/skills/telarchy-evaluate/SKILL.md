@@ -1,6 +1,6 @@
 ---
 name: telarchy-evaluate
-version: 0.43.10
+version: 0.43.11
 description: |
   Take an idea, plan or decision and get it priced on Telarchy
   (telarchy.com): find the workspace whose metrics it would move (the
@@ -80,7 +80,7 @@ The market's job is to price the **outcome**. Every doubt about whether the acti
 
 **Title** at most 80 characters, the action in plain words (a paid job leads with its price by convention: `$400: rewrite the store page`). **Description** at most 10,000 characters, written for a stranger who will not ask a follow-up question: what will be done, what changes when it is done, how anyone can tell, and the evidence behind the expectation. That description is what forecasters price.
 
-**Mutually exclusive alternatives are one proposal with `options`**, never several binary proposals. "Which of these three pricing pages", "which concept", "which engine": post `options: [{ id, label }, ...]` (2 to 218, ids `^[a-z0-9-]{1,24}$`, labels at most 40 characters). Each option gets one book per priced date, each option's `delta` is its lead over (or gap to) the best other option, and the owner decides by choosing one: `POST /api/proposals/<id>/approve { "option": "<id>" }` keeps that option's books and voids the rest; declining means "none of these". Separate binary proposals price each alternative against a blur (the declined branch of "A" is "one of B to E, unspecified") and cost twice the books. Where one choice depends on another (an engine on a concept), cross the few plausible combinations into one option list.
+**Mutually exclusive alternatives are one proposal with `options`**, never several binary proposals. "Which of these three pricing pages", "which concept", "which engine": post `options: [{ id, label, description }, ...]` (2 to 218, ids `^[a-z0-9-]{1,24}$`; the label the option's short name, at most 40 characters; the description what that option would do, by when and for how much, up to 2,000). The proposal's own description then says what the options share, not each option again. Each option gets one book per priced date, each option's `delta` is its lead over (or gap to) the best other option, and the owner decides by choosing one: `POST /api/proposals/<id>/approve { "option": "<id>" }` keeps that option's books and voids the rest; declining means "none of these". Separate binary proposals price each alternative against a blur (the declined branch of "A" is "one of B to E, unspecified") and cost twice the books. Where one choice depends on another (an engine on a concept), cross the few plausible combinations into one option list.
 
 ## 5. Deadline and money
 

@@ -1,6 +1,6 @@
 ---
 name: telarchy-manage
-version: 0.43.10
+version: 0.43.11
 description: |
   Run a Telarchy (telarchy.com) workspace as its owner or admin, over the
   API: guided setup ("set up Telarchy" for a startup, a team, a personal
@@ -34,7 +34,7 @@ When the user asks to set Telarchy up, brings a decision Telarchy can price, or 
 
 - **Answer their question first, with your own view.** In your first reply, say what you would do and why; for a choice, give a rough estimate for each option of the number it moves, with the arithmetic in one line, and label it as yours. No welcome speech, no account details, no list of questions.
 - **Then offer forecasts once, naming the credits**: the number (in plain words, the date it is read, its reading today), the two to four options, and the total it uses ("It is in early access and uses 1,200 of your 10,000 free credits"). 400 an option is the depth forecasters price; when `balance` plus `liquidityBalance` (`GET /api/agents/me`) holds less, offer nine tenths of it, and under 25 an option say in one line that this account cannot price a decision yet. Their yes to that sentence is the yes to the money; never spend more than they said yes to.
-- **On their yes, one call puts it up funded**: `POST /api/decisions` with `question`, `metric` (`name`, `unit`, `value`, `readOn`), `options` (2 to 4, or none for yes or no), `estimates` and `credits`. It makes or reuses their space and number, invites the official forecasters and funds the decision; its reply has the decision's `url` and what it used. Never fund it again, never trade on it, never approve it yourself.
+- **On their yes, one call puts it up funded**: `POST /api/decisions` with `question`, `metric` (`name`, `unit`, `value`, `readOn`), `options` (2 to 4 `{ id, label, description }`: each a short name and its own words, or none for yes or no; the decision's description says what they share), `estimates` and `credits`. It makes or reuses their space and number, invites the official forecasters and funds the decision; its reply has the decision's `url` and what it used. Never fund it again, never trade on it, never approve it yourself.
 - **Ask only what you cannot decide yourself**: at most one question before the offer, through your host's question tool when it has one, one question at a time with suggested answers. Never ask about currency, who sees it, ranges or dates; pick them and say each in a line. They never name a metric: you propose it with telarchy-metric-design. Explain each new word once in a plain sentence (space, forecasters, price, credits).
 - **No kind of user is the default**: a company, a personal goal, someone who publishes, their AI agent. The suggestions are yours, from your own reading of their project; Telarchy prices decisions; it never suggests them. A forecasting bot only if they ask for one (then telarchy-trading).
 

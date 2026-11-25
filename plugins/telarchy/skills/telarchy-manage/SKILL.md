@@ -75,7 +75,6 @@ curl -s -b ~/.telarchy-cookies -X POST https://telarchy.com/api/agents/me/keys -
 ```
 
 - Templates: `saas`, `ecommerce`, `marketplace`, `consumer-app`, `agency`, `community`, `creator`, `oss`, `startup`; `wellbeing`, `health-fitness`, `career`, `learning`, `relationships`, `creative-project`, `financial-independence`, `personal`; `blank`. Set `currency` for a non-USD user. A template is a starting point: review its metrics with telarchy-metric-design rather than keeping them by default.
-- **Three workspaces per account** (the fourth is 429 with the cap).
 - **The first floor brings 10,000 credits for liquidity**, once per account: the first workspace an account creates puts them in its liquidity wallet (`liquidityGranted` on the response; 0 for every later floor, even after the first is deleted). Spend them on the first metric's books (section 4).
 - **A new floor is `unlisted`, and unlisted answers strangers nothing** (the same 403 as private). Asking for `public` is clamped to unlisted; listing is a human decision on telarchy.com. Read `visibility` off the response.
 - **To let someone look without signing up, make a view link**: `POST /api/workspaces/<id>/view-link` returns `{ token, url }`. Whoever opens the url sees the floor as its owner does and can change nothing (API: header `X-View-Link: <token>`, `read` on that one floor only). Posting again replaces it and `DELETE` turns it off; either way the old link reads nothing. It never lists the floor or makes it public. Handing access to someone is the owner's call: make one only on their yes.
